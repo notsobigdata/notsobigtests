@@ -14,6 +14,76 @@ function testModelSqlFileDefaultsToNodeName() {
 }
 
 
+// notsobigdataModels.folders + modelDir (notsobiglib PR #71) - companion
+// coverage for the one thing testModelSqlFileDefaultsToNodeName above
+// can't: sqlFile's default resolving *inside* a real clasp-pushed
+// subfolder (html/folder/), not just at the project root. Both models
+// below share one folder entry so the same run also proves an explicit
+// sqlFile (tmpFolderExplicitSqlFile, pointing at the root-level
+// stg_orders.html) ignores that folder's modelDir entirely, rather than
+// needing a second withTemporaryNodes block just for that.
+function testModelFolderModelDirDefaultsSqlFileAndEntryOverridesIt() {
+  withTemporaryNodes({
+    notsobigdataModels: {
+      projectId: P.BIGQUERY_PROJECT_ID, dataset: P.BIGQUERY_DATASET,
+      folders: {
+        tmpMarketing: { modelDir: 'html/folder/' }
+      },
+      models: {
+        tmpFolderDefault: { folder: 'tmpMarketing' },
+        tmpFolderExplicitSqlFile: { folder: 'tmpMarketing', sqlFile: 'stg_orders.html' }
+      }
+    }
+  }, function () {
+    var report = NotSoBigData.cli('run --select tmpFolderDefault,tmpFolderExplicitSqlFile');
+    check('a model with no sqlFile of its own resolves under its folder\'s modelDir, from a real clasp-pushed subfolder',
+      statusOf(report, 'tmpFolderDefault') === 'success', JSON.stringify(report.nodes));
+    check('a model with its own sqlFile ignores its folder\'s modelDir entirely',
+      statusOf(report, 'tmpFolderExplicitSqlFile') === 'success', JSON.stringify(report.nodes));
+  });
+}
+
+
+// Folder-level config beyond modelDir - materialized here - actually
+// takes effect on the resolved node, not just the sqlFile computation
+// above. Verified the same way testLoadBigQuerySchema (13-tests-bigquery.js)
+// verifies a load's schema override: run the real node, then a separate
+// temporary query node reads BigQuery's own INFORMATION_SCHEMA back -
+// this harness has no precedent for a raw BigQuery.Tables/Jobs call
+// bypassing cli() (see 19-tests-model-tests.js's note), so table_type
+// comes from a query a move node runs, same as every other meta-check
+// here.
+function testModelFolderMaterializedIsInheritedFromFolder() {
+  withTemporaryNodes({
+    notsobigdataModels: {
+      projectId: P.BIGQUERY_PROJECT_ID, dataset: P.BIGQUERY_DATASET,
+      folders: {
+        tmpMarketing: { materialized: 'table' }
+      },
+      models: {
+        tmpFolderMaterializedInherit: { folder: 'tmpMarketing', sqlFile: 'html/folder/tmpFolderMaterializedInherit.html' }
+      }
+    }
+  }, function () {
+    runOne('tmpFolderMaterializedInherit');
+    withTemporaryNodes({
+      tmpFolderMaterializedCheck: {
+        kind: 'move', name: 'tmpFolderMaterializedCheck',
+        source: {
+          type: 'bigquery', projectId: P.BIGQUERY_PROJECT_ID,
+          query: 'SELECT table_type FROM ' + P.BIGQUERY_DATASET + '.INFORMATION_SCHEMA.TABLES WHERE table_name = "tmpFolderMaterializedInherit"'
+        }
+      }
+    }, function () {
+      var rows = runOne('tmpFolderMaterializedCheck');
+      var tableType = rows[1] && rows[1][0];
+      check('a model with no materialized of its own inherits "table" from its folder, per BigQuery\'s own INFORMATION_SCHEMA',
+        tableType === 'BASE TABLE', 'got ' + tableType);
+    });
+  });
+}
+
+
 // The five tests below cover fixes from /release finish's simplify +
 // independent review pass, not the original feature PR - see
 // src/model.md's "Fixes from /release finish's..." section for why each

@@ -139,7 +139,19 @@ string has to spell out the path.
 `17-tests-model-files.js`, and `testModelDependsOnUnionsWithRefDependencies`
 in `15-tests-model-dependson.js`) declare a model named `stg_orders` with
 no explicit `sqlFile`, deliberately relying on `model.js`'s default-naming
-convention (`config.sqlFile = name + '.html'`). That default is a plain
-string concatenation with no folder segment - it can only ever resolve at
-the project root. If you add a new "default sqlFile naming" test, its
-backing fixture needs a root-level file too, for the same reason.
+convention (`config.sqlFile = name + '.html'`, no `modelDir`). That
+default is a plain string concatenation with no folder segment - it can
+only ever resolve at the project root. If you add a new "default sqlFile
+naming" test with no `folder`/`modelDir` involved, its backing fixture
+needs a root-level file too, for the same reason.
+
+**`notsobigdataModels.folders` + `modelDir` (notsobiglib PR #71) give
+the *default* naming convention folder awareness - explicit `sqlFile`/
+`macros` still don't, and still need the full path spelled out.** A model
+that omits `sqlFile` and belongs to a folder setting `modelDir:
+'html/folder/'` resolves to `html/folder/<model name>.html` - see
+`html/folder/` and `17-tests-model-files.js`'s
+`testModelFolderModelDirDefaultsSqlFileAndEntryOverridesIt` for the real
+clasp-pushed-subfolder fixture this proves against. A model with its own
+`sqlFile` (or any `macros` entry) is unaffected either way and keeps
+needing the full `html/...` path.

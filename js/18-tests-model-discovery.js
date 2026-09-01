@@ -49,6 +49,49 @@ function testModelMalformedRegistryThrows() {
 }
 
 
+// notsobigdataModels.folders (notsobiglib PR #71) - the two errors below
+// mirror the two existing shapes just above: a per-model bad reference
+// (testModelSingleTagMismatchedIdFailsAtList's style - caught inside
+// expandModelNodes()'s per-model try/catch, so it's that one node's own
+// "failed" status, not a hard cli() abort) and a structurally malformed
+// shared-config value (testModelMalformedRegistryThrows's style - thrown
+// straight out of readModelsRegistry(), before the per-model loop even
+// starts, so it takes the whole cli() call down).
+function testModelUnknownFolderFailsAtList() {
+  withTemporaryNodes({
+    notsobigdataModels: {
+      projectId: P.BIGQUERY_PROJECT_ID, dataset: P.BIGQUERY_DATASET,
+      models: { tmpUnknownFolder: { folder: 'nope' } }
+    }
+  }, function () {
+    var node = NotSoBigData.cli('list').nodes.filter(function (n) { return n.name === 'tmpUnknownFolder'; })[0];
+    check('a model declaring a folder absent from notsobigdataModels.folders is reported failed by a dry "list" run',
+      !!node && node.status === 'failed' && node.error.indexOf('is not declared in notsobigdataModels.folders') !== -1,
+      node ? node.status + ': ' + node.error : 'node missing from report');
+  });
+}
+
+
+function testModelMalformedFoldersThrows() {
+  withTemporaryNodes({
+    notsobigdataModels: {
+      projectId: P.BIGQUERY_PROJECT_ID, dataset: P.BIGQUERY_DATASET,
+      folders: ['not', 'an', 'object'],
+      models: {}
+    }
+  }, function () {
+    var threw = null;
+    try {
+      NotSoBigData.cli('list');
+    } catch (e) {
+      threw = e;
+    }
+    check('a structurally malformed notsobigdataModels.folders throws instead of being silently ignored',
+      !!threw && threw.message.indexOf('notsobigdataModels.folders must be an object') !== -1, threw ? threw.message : 'did not throw');
+  });
+}
+
+
 function testModelTopLevelVarRejected() {
   withTemporaryNodes({
     tmpOldStyleModel: { kind: 'model', sqlFile: 'stg_orders.html' }

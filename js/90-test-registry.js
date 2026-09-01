@@ -270,6 +270,8 @@ var TEST_CATEGORIES = {
   ],
   'model-files': [
     testModelSqlFileDefaultsToNodeName,
+    testModelFolderModelDirDefaultsSqlFileAndEntryOverridesIt,
+    testModelFolderMaterializedIsInheritedFromFolder,
     testModelMultipleSqlTagsWithoutIdsFailsAtList,
     testModelNoTagWholeFileIsSql,
     testModelSharedFileResolvesByIdAndOrdersCorrectly,
@@ -284,6 +286,8 @@ var TEST_CATEGORIES = {
     testModelRegistryNameCollisionThrows,
     testModelMultiStatementThrows,
     testModelMalformedRegistryThrows,
+    testModelUnknownFolderFailsAtList,
+    testModelMalformedFoldersThrows,
     testModelTopLevelVarRejected,
     testModelBrokenModelDoesNotBlockUnrelatedNode
   ],
