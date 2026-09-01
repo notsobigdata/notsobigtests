@@ -6,14 +6,12 @@
 
 function setupScriptProperties() {
   PropertiesService.getScriptProperties().setProperties({
-    // Pointed at feat/model-source-macro (notsobiglib PR #70) so the new
-    // model-sources fixtures below actually exercise that branch's
-    // {{ source(...) }}/cli('sources') code before it merges - see
-    // notsobiglib's CLAUDE.md, "Pointing notsobigtests at the branch under
-    // test". Flip back to 'release/14' (the active release branch) once
-    // that PR merges - remember src.js is generated, only worth testing
-    // once ./build.sh has been run and the rebuilt src.js committed there.
-    SRC_REF: 'feat/model-source-macro',
+    // notsobiglib PR #70 (feat/model-source-macro) merged into release/14
+    // on 2026-09-01, after the model-sources fixtures below confirmed
+    // passing against it - back to the active release branch now that
+    // branch is gone (merging deletes it, see notsobiglib's CLAUDE.md,
+    // "Downstream consumers pinned to a release").
+    SRC_REF: 'release/14',
     NOTSOBIGDATA_DRIVE_FOLDER_ID: '16ZrtrxrO40w4InGi_bzL8I7WLGODa4Dd',
     // Sheets/Drive fixtures below all hold the same 3-row orders sample
     // (order_id, customer, amount), created inside the notsobigdata Drive
