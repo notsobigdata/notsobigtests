@@ -80,6 +80,33 @@ function myCustomExtractSqlTestOrdersOrphan(source) {
   return [['order_id', 'customer_id'], ['200', '1'], ['201', '999']];
 }
 
+// Fixtures for the model-sources test category ({{ source(...) }} +
+// cli('sources')) - see js/26-tests-model-sources.js. updated_at is
+// computed at CALL time (new Date()), not baked into the function body,
+// so "fresh" is actually fresh whenever a human runs the fixture, and
+// "stale" is always a fixed 3 hours old relative to that run - freshness
+// tests then vary only the warnAfterMinutes/errorAfterMinutes threshold in
+// notsobigdataModels.sources, not the underlying data.
+function myCustomExtractSourceFresh(source) {
+  var now = new Date().toISOString();
+  return [['customer_id', 'updated_at'], ['1', now], ['2', now], ['3', now]];
+}
+
+function myCustomExtractSourceStale(source) {
+  var threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+  return [['customer_id', 'updated_at'], ['1', threeHoursAgo], ['2', threeHoursAgo]];
+}
+
+// A duplicate customer_id ("1" twice) and a blank one, for the
+// cli('sources') generic-tests-fail fixture - same shape
+// myCustomExtractForUniquenessTest above already uses for move's own data
+// tests, just with an updated_at column alongside since this table is
+// declared as a source (which needs one) rather than a move target.
+function myCustomExtractSourceViolations(source) {
+  var now = new Date().toISOString();
+  return [['customer_id', 'updated_at'], ['1', now], ['1', now], ['', now]];
+}
+
 // Same valid customer_ids as myCustomExtractSqlTestOrdersValid, but with
 // an extra "region" column the destination table doesn't have yet -
 // combined with target.allowSchemaEvolution below, this is the one
