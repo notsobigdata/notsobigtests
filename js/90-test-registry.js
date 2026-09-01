@@ -6,12 +6,14 @@
 
 function setupScriptProperties() {
   PropertiesService.getScriptProperties().setProperties({
-    // Pointed at release/12, now that all 9 fixes tested on the (deleted)
-    // test/release-12-integration branch have merged in. Flip to 'main'
-    // once release/12 itself merges. Remember src.js is generated - only
-    // worth testing once ./build.sh has been run and the rebuilt src.js
-    // committed, which it has been here.
-    SRC_REF: 'release/12',
+    // Pointed at feat/model-source-macro (notsobiglib PR #70) so the new
+    // model-sources fixtures below actually exercise that branch's
+    // {{ source(...) }}/cli('sources') code before it merges - see
+    // notsobiglib's CLAUDE.md, "Pointing notsobigtests at the branch under
+    // test". Flip back to 'release/14' (the active release branch) once
+    // that PR merges - remember src.js is generated, only worth testing
+    // once ./build.sh has been run and the rebuilt src.js committed there.
+    SRC_REF: 'feat/model-source-macro',
     NOTSOBIGDATA_DRIVE_FOLDER_ID: '16ZrtrxrO40w4InGi_bzL8I7WLGODa4Dd',
     // Sheets/Drive fixtures below all hold the same 3-row orders sample
     // (order_id, customer, amount), created inside the notsobigdata Drive
@@ -111,7 +113,22 @@ function setupScriptProperties() {
     // without actually persisting it - enough to confirm the api target
     // builds and sends a well-formed POST, same no-auth/always-available
     // reasoning as the API_SOURCE_URL_* properties above.
-    API_TARGET_URL: 'https://jsonplaceholder.typicode.com/posts'
+    API_TARGET_URL: 'https://jsonplaceholder.typicode.com/posts',
+
+    // Scratch tables for the model-sources category ({{ source(...) }} +
+    // cli('sources') - see js/26-tests-model-sources.js). Each test seeds
+    // its own table fresh via a temporary move() node before declaring it
+    // as a notsobigdataModels.sources table, the same "reset before use"
+    // pattern the sqlTests/schema-evolution scratch tables above already
+    // follow - kept as three separate tables (not one reused table) so a
+    // freshness fixture's data can't drift from what a tests fixture
+    // expects. Tests that only exercise --select/list/skipped-check
+    // behavior (never actually querying BigQuery for a check that isn't
+    // configured) reuse BIGQUERY_SOURCE_FRESH_TABLE's name without
+    // loading anything into it first - see those tests' own comments.
+    BIGQUERY_SOURCE_FRESH_TABLE: 'test_source_fresh',
+    BIGQUERY_SOURCE_STALE_TABLE: 'test_source_stale',
+    BIGQUERY_SOURCE_VIOLATIONS_TABLE: 'test_source_violations'
   });
   Logger.log('Script properties set. Re-run any test function to pick up the change.');
 }
@@ -329,6 +346,25 @@ var TEST_CATEGORIES = {
     testModelRefProtoNamedMoveNodeResolves,
     testSelectorTolerateSpaceAfterComma,
     testJsonEnvelopeReportsAClearError
+  ],
+  // {{ source(...) }} + notsobigdataModels.sources + cli('sources') - the
+  // dbt source.yml equivalent (see docs/model.md's "Declaring external
+  // data" section). Its own category, not folded into model-jinja (which
+  // predates source() and is scoped to ref()/config()/var()/set()/for()/
+  // macro's own dispatch) or model-tests (whose fixtures all run against
+  // a model's own materialized relation, never a source table nobody here
+  // builds) - a source is deliberately never a node, so every test here
+  // calls cli('sources')/cli('list') directly rather than cli('run').
+  'model-sources': [
+    testModelSourceResolvesAndSelectsRealData,
+    testSourcesFreshnessOkAndTestsPass,
+    testSourcesFreshnessWarn,
+    testSourcesFreshnessError,
+    testSourcesGenericTestsFailCollectAllViolations,
+    testSourcesSkippedWhenNothingConfigured,
+    testSourcesSelectFiltersByDottedSourceTable,
+    testSourcesUnknownSelectorThrows,
+    testListReportsDeclaredSources
   ],
   pipeline: [
     testPipelineChain,
