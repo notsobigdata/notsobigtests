@@ -5,14 +5,30 @@ This is the companion clasp project described in `notsobiglib`'s
 exercises every `cli()` command / node kind / connector the library ships,
 against real Sheets/Drive/BigQuery resources. It lives in its own repo,
 `notsobigdata/notsobigtests`, sibling to `notsobiglib`. Everything here is
-committed and reviewed like any other repo — the one exception is
-`.clasp.json` (gitignored): it holds a `scriptId` tied to a specific
-Apps Script deployment, personal to whoever's Google account owns it, so
-each contributor runs `clasp create`/`clasp clone` once to generate their
-own before `clasp push -f`.
+committed and reviewed like any other repo (see "Contributing" below) —
+the one exception is `.clasp.json` (gitignored): it holds a `scriptId`
+tied to a specific Apps Script deployment, personal to whoever's Google
+account owns it, so each contributor runs `clasp create`/`clasp clone`
+once to generate their own before `clasp push -f`.
 
 Read this file instead of opening every file under `js/`/`html/` — it's
 the map. Open an individual file only once you know which one you need.
+
+## Contributing
+
+Same branch/commit convention as `notsobiglib` (`type/description`
+branches, `type: description` Conventional Commits, `type` ∈
+feat/fix/refactor/docs/test/chore) — never commit directly to `main`, even
+for a one-line fixture tweak. This repo has no `release/*` tier: a PR
+merges straight into `main` once a human has run the pushed fixture in the
+Apps Script editor and confirmed it passes (`clasp push` deploys code, it
+doesn't execute anything — see notsobiglib's CLAUDE.md, "About testing").
+
+When a fixture here is a companion to a `notsobiglib` change (`/ship`'s
+Stage 4 step 3), cross-link the two PR descriptions both ways. There's no
+`/ship`/`/release`/`/merge-pr` command set in *this* repo — it's a single
+always-`main`-based project, so plain `git checkout -b`, `gh pr create`,
+and `gh pr merge --merge` (never squash, same as notsobiglib) cover it.
 
 ## Layout
 
