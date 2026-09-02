@@ -1,0 +1,8 @@
+<!-- targetModelWithTargets.html — Test model for --target flag, datasets override -->
+<script type="text/sql">
+  {{ config(materialized='table') }}
+  SELECT
+    *
+  FROM `test-project.prod_dataset.test-table`
+  LIMIT 10
+</script>

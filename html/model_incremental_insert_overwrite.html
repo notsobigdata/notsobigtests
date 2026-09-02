@@ -1,0 +1,16 @@
+<!-- Incremental model using INSERT_OVERWRITE strategy with partitioning -->
+<script type="text/sql" id="incremental_events_daily_insert_overwrite">
+  {{ config(materialized='incremental', incrementalStrategy='insert_overwrite') }}
+  select
+    cast(event_date as date) as event_date,
+    event_type,
+    event_count,
+    processed_at
+  from (
+    select cast('2026-01-01' as date) as event_date, 'login' as event_type, 10 as event_count, timestamp('2026-01-01 23:59:59') as processed_at
+    union all select cast('2026-01-02' as date) as event_date, 'login' as event_type, 15 as event_count, timestamp('2026-01-02 23:59:59') as processed_at
+    {% if is_incremental() %}
+      union all select cast('2026-01-02' as date) as event_date, 'logout' as event_type, 8 as event_count, current_timestamp() as processed_at
+    {% endif %}
+  )
+</script>

@@ -1,0 +1,24 @@
+<!-- Incremental model using MERGE strategy -->
+<script type="text/sql" id="incremental_merge_source">
+  select
+    cast(1 as int64) as id,
+    'alice' as name,
+    current_timestamp() as updated_at
+  union all select 2, 'bob', current_timestamp()
+</script>
+
+<script type="text/sql" id="incremental_orders_merge">
+  {{ config(materialized='incremental', incrementalStrategy='merge', uniqueKey='order_id') }}
+  select
+    cast(order_id as int64) as order_id,
+    customer_id,
+    amount,
+    updated_at
+  from (
+    select 1 as order_id, 'alice' as customer_id, 100.00 as amount, timestamp('2026-01-01') as updated_at
+    union all select 2 as order_id, 'bob' as customer_id, 200.00 as amount, timestamp('2026-01-02') as updated_at
+    {% if is_incremental() %}
+      union all select 3 as order_id, 'charlie' as customer_id, 300.00 as amount, current_timestamp() as updated_at
+    {% endif %}
+  )
+</script>
