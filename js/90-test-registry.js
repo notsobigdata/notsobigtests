@@ -6,12 +6,12 @@
 
 function setupScriptProperties() {
   PropertiesService.getScriptProperties().setProperties({
-    // notsobiglib PR #70 (feat/model-source-macro) merged into release/14
-    // on 2026-09-01, after the model-sources fixtures below confirmed
-    // passing against it - back to the active release branch now that
-    // branch is gone (merging deletes it, see notsobiglib's CLAUDE.md,
-    // "Downstream consumers pinned to a release").
-    SRC_REF: 'release/14',
+    // release/14 (source() macro, folders, the notsobiglib rename) merged
+    // into main and was deleted on 2026-09-01 - a branch-name ref 404s the
+    // moment its release branch merges (see notsobiglib's CLAUDE.md,
+    // "Downstream consumers pinned to a release"), so this points at main,
+    // not the branch, once a release ships.
+    SRC_REF: 'main',
     NOTSOBIGDATA_DRIVE_FOLDER_ID: '16ZrtrxrO40w4InGi_bzL8I7WLGODa4Dd',
     // Sheets/Drive fixtures below all hold the same 3-row orders sample
     // (order_id, customer, amount), created inside the notsobigdata Drive
@@ -288,6 +288,7 @@ var TEST_CATEGORIES = {
     testModelMalformedRegistryThrows,
     testModelUnknownFolderFailsAtList,
     testModelMalformedFoldersThrows,
+    testSourceRelationshipsTestToFolderedModelDoesNotThrow,
     testModelTopLevelVarRejected,
     testModelBrokenModelDoesNotBlockUnrelatedNode
   ],
