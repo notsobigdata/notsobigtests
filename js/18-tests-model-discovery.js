@@ -92,6 +92,52 @@ function testModelMalformedFoldersThrows() {
 }
 
 
+// Regression coverage for a notsobiglib release/14 finish-pass independent
+// review finding: readSourcesEntry() validated a source table's tests[]
+// against a shim registry ({ models, defaults }) that omitted folders. A
+// "relationships" test whose "to" names a model declared with a folder
+// resolves that model via resolveModelConfig(), which needs registry.folders
+// whenever the target declares one - the missing key made
+// has(undefined, ...) throw a raw TypeError, surfaced as a misleading "not
+// a declared model" error for a model that *was* declared. The crash
+// happens at registry-read time, before any BigQuery call, so a dry "list"
+// run is enough to prove it - tmpFolderedModel's sqlFile (stg_orders.html,
+// the one fixture required to stay at the project root) never actually
+// needs to be read for the bug to reproduce.
+function testSourceRelationshipsTestToFolderedModelDoesNotThrow() {
+  withTemporaryNodes({
+    notsobigdataModels: {
+      projectId: P.BIGQUERY_PROJECT_ID, dataset: P.BIGQUERY_DATASET,
+      folders: { tmpFolder: { dataset: P.BIGQUERY_DATASET } },
+      models: { tmpFolderedModel: { folder: 'tmpFolder', sqlFile: 'stg_orders.html' } },
+      sources: {
+        sourcetest: {
+          tables: {
+            customers: {
+              table: P.BIGQUERY_SOURCE_FRESH_TABLE,
+              tests: [{ column: 'customer_id', check: 'relationships', to: 'tmpFolderedModel', field: 'order_id' }]
+            }
+          }
+        }
+      }
+    }
+  }, function () {
+    var threw = null;
+    var report;
+    try {
+      report = NotSoBigData.cli('list');
+    } catch (e) {
+      threw = e;
+    }
+    check('a source relationships test targeting a folder-grouped model does not throw at registry-read time',
+      !threw, threw ? threw.message : 'ok');
+    var node = report && report.nodes.filter(function (n) { return n.name === 'tmpFolderedModel'; })[0];
+    check('the target model itself is planned normally, not reported failed',
+      !!node && node.status === 'planned', node ? JSON.stringify(node) : 'node missing from report');
+  });
+}
+
+
 function testModelTopLevelVarRejected() {
   withTemporaryNodes({
     tmpOldStyleModel: { kind: 'model', sqlFile: 'stg_orders.html' }
