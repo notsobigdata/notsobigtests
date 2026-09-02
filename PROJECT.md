@@ -24,11 +24,13 @@ merges straight into `main` once a human has run the pushed fixture in the
 Apps Script editor and confirmed it passes (`clasp push` deploys code, it
 doesn't execute anything — see notsobiglib's CLAUDE.md, "About testing").
 
-When a fixture here is a companion to a `notsobiglib` change (`/ship`'s
-Stage 4 step 3), cross-link the two PR descriptions both ways. There's no
-`/ship`/`/release`/`/merge-pr` command set in *this* repo — it's a single
-always-`main`-based project, so plain `git checkout -b`, `gh pr create`,
-and `gh pr merge --merge` (never squash, same as notsobiglib) cover it.
+When a fixture here is a companion to a `notsobiglib` change (see that
+repo's `CLAUDE.md`, "About devops stuff" step 4, and "About testing"
+Layer 2 for writing the fixture *before* the `src/` change), cross-link
+the two PR descriptions both ways. There's no custom command set in
+*this* repo — it's a single always-`main`-based project, so plain `git
+checkout -b`, `gh pr create`, and `gh pr merge --merge` (never squash,
+same as notsobiglib) cover it.
 
 ## Layout
 
