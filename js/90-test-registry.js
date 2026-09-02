@@ -233,6 +233,19 @@ var TEST_CATEGORIES = {
   'model-core': [
     testModelViewDependencyOrderAndTableMaterialization
   ],
+  // Incremental model strategies: merge, insert_overwrite, append
+  // Layer 2 verification against live BigQuery - tests that actual incremental
+  // mutations work (MERGE upsert, DELETE+INSERT for insert_overwrite, INSERT for append)
+  'model-incremental': [
+    testIncrementalMergeFirstBuild,
+    testIncrementalMergeSecondRun,
+    testIncrementalMergeFullRefresh,
+    testIncrementalAppendFirstBuild,
+    testIncrementalAppendSecondRun,
+    testIncrementalInsertOverwriteFirstBuild,
+    testIncrementalInsertOverwriteSecondRun,
+    testIsIncrementalConditionalEvaluatesCorrectly
+  ],
   'model-dependson': [
     testModelDependsOnMoveNodeOrdersCorrectly,
     testModelDependsOnUnionsWithRefDependencies,
@@ -368,6 +381,14 @@ var TEST_CATEGORIES = {
     testSourcesSelectFiltersByDottedSourceTable,
     testSourcesUnknownSelectorThrows,
     testListReportsDeclaredSources
+  ],
+  targets: [
+    testTargetFlagOnMoveOverlay,
+    testTargetFlagOnModelOverlay,
+    testNoTargetUsesDefaults,
+    testUnknownTargetThrows,
+    testTargetDevModel,
+    testTargetProdModel
   ],
   pipeline: [
     testPipelineChain,

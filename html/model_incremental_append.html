@@ -1,0 +1,31 @@
+<!-- Incremental model using APPEND strategy -->
+<script type="text/sql" id="incremental_logs_append">
+  {{ config(materialized='incremental', incrementalStrategy='append') }}
+  select
+    cast(event_id as int64) as event_id,
+    event_name,
+    logged_at
+  from (
+    select 1 as event_id, 'page_view' as event_name, timestamp('2026-01-01 10:00:00') as logged_at
+    union all select 2 as event_id, 'click' as event_name, timestamp('2026-01-01 10:05:00') as logged_at
+    {% if is_incremental() %}
+      union all select 3 as event_id, 'scroll' as event_name, current_timestamp() as logged_at
+    {% endif %}
+  )
+</script>
+
+<!-- Test version with matching id for test_is_incremental model -->
+<script type="text/sql" id="test_is_incremental">
+  {{ config(materialized='incremental', incrementalStrategy='append') }}
+  select
+    cast(event_id as int64) as event_id,
+    event_name,
+    logged_at
+  from (
+    select 1 as event_id, 'page_view' as event_name, timestamp('2026-01-01 10:00:00') as logged_at
+    union all select 2 as event_id, 'click' as event_name, timestamp('2026-01-01 10:05:00') as logged_at
+    {% if is_incremental() %}
+      union all select 3 as event_id, 'scroll' as event_name, current_timestamp() as logged_at
+    {% endif %}
+  )
+</script>
