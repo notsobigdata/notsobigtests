@@ -1,0 +1,10 @@
+<!-- Incremental model with on_schema_change='ignore' - ignores new columns -->
+<script type="text/sql" id="on_schema_change_ignore">
+  {{ config(materialized='incremental', incrementalStrategy='merge', uniqueKey='id', on_schema_change='ignore') }}
+  select
+    cast(1 as int64) as id,
+    'alice' as name
+    {% if is_incremental() %}
+      , 'new_value' as new_column
+    {% endif %}
+</script>
