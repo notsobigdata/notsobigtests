@@ -11,7 +11,7 @@ function setupScriptProperties() {
     // moment its release branch merges (see notsobiglib's CLAUDE.md,
     // "Downstream consumers pinned to a release"), so this points at main,
     // not the branch, once a release ships.
-    SRC_REF: 'main',
+    SRC_REF: 'feat/on-schema-change',
     NOTSOBIGDATA_DRIVE_FOLDER_ID: '16ZrtrxrO40w4InGi_bzL8I7WLGODa4Dd',
     // Sheets/Drive fixtures below all hold the same 3-row orders sample
     // (order_id, customer, amount), created inside the notsobigdata Drive
@@ -381,6 +381,16 @@ var TEST_CATEGORIES = {
     testSourcesSelectFiltersByDottedSourceTable,
     testSourcesUnknownSelectorThrows,
     testListReportsDeclaredSources
+  ],
+  // Incremental model on_schema_change modes: ignore, fail, append_new_columns, sync_all_columns
+  // Layer 2 verification against live BigQuery - tests that each mode behaves correctly
+  // when incremental table schema changes between runs
+  'model-on-schema-change': [
+    testOnSchemaChangeIgnoreSkipsNewColumns,
+    testOnSchemaChangeFailBlocksSchemaChange,
+    testOnSchemaChangeAppendNewColumnsAddsColumns,
+    testOnSchemaChangeSyncAllColumnsFullyResync,
+    testOnSchemaChangeIgnoredDuringFullRefresh
   ],
   targets: [
     testTargetFlagOnMoveOverlay,
