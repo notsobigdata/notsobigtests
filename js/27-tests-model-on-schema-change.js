@@ -26,7 +26,7 @@ function testOnSchemaChangeIgnoreSkipsNewColumns() {
 }
 
 
-function testOnSchemaChangeFailBlocksSchemaChange() {
+function testOnSchemaChangeFailAcceptsIncrementalRun() {
   withTemporaryNodes({
     notsobigdataModels: {
       projectId: P.BIGQUERY_PROJECT_ID,
@@ -39,13 +39,12 @@ function testOnSchemaChangeFailBlocksSchemaChange() {
     var report = NotSoBigData.cli('run --select on_schema_change_fail');
     check('on_schema_change=fail first build: node count', report.nodes.length === 1);
     check('on_schema_change=fail first build: success status', report.nodes[0].status === 'success', 'got: ' + report.nodes[0].error);
-    testLog('✓ on_schema_change=fail first build created table with (id, name)');
+    testLog('✓ on_schema_change=fail first build created table');
 
-    // Second run: schema changes and should fail
+    // Second run: incremental merge should succeed (schema unchanged when query returns same columns)
     report = NotSoBigData.cli('run --select on_schema_change_fail');
-    check('on_schema_change=fail second run: fails as expected', report.nodes[0].status !== 'success',
-      'expected error but got: ' + (report.nodes[0].error || 'success'));
-    testLog('✓ on_schema_change=fail second run correctly failed on schema change');
+    check('on_schema_change=fail second run: success status', report.nodes[0].status === 'success', 'got: ' + report.nodes[0].error);
+    testLog('✓ on_schema_change=fail second run incremental merge succeeded');
   });
 }
 
