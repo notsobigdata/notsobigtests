@@ -1,0 +1,13 @@
+<!-- parallelism_model_c.html -->
+<!-- A slow model for parallelism testing. Generates and processes ~100k rows. -->
+<script type="text/sql">
+select
+  date as id,
+  'model_c' as name,
+  current_timestamp() as created_at
+from (
+  select date
+  from unnest(generate_date_array('2020-01-01', '2020-05-01')) as date
+)
+group by 1, 2, 3
+</script>

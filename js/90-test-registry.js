@@ -403,6 +403,12 @@ var TEST_CATEGORIES = {
   pipeline: [
     testPipelineChain,
     testRunEverything
+  ],
+  // Parallel execution of model nodes within a level (feat/parallel-model-execution).
+  // Three independent models, each running ~5s on BigQuery. With parallelism,
+  // should complete in ~5-7s (all queries parallel). Without, ~15s (sequential).
+  parallelism: [
+    testParallelismThreeModelsExecuteInParallel
   ]
 };
 
