@@ -101,7 +101,7 @@ function testOnSchemaChangeIgnoredDuringFullRefresh() {
       projectId: P.BIGQUERY_PROJECT_ID,
       dataset: P.BIGQUERY_DATASET,
       models: {
-        on_schema_change_full_refresh: { sqlFile: 'html/model_on_schema_change_ignore.html' }
+        on_schema_change_full_refresh: { sqlFile: 'html/model_on_schema_change_full_refresh.html' }
       }
     }
   }, function () {
