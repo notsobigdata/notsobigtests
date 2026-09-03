@@ -1,0 +1,13 @@
+<!-- parallelism_model_c.html -->
+<!-- A slow model for parallelism testing. Sleeps 5s on BigQuery via nested select. -->
+<script type="text/sql">
+select
+  3 as id,
+  'model_c' as name,
+  current_timestamp() as created_at
+from (
+  select 3
+  union all
+  select sleep(5000)  -- BigQuery sleep macro (5 seconds)
+)
+</script>
