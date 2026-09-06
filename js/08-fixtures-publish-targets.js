@@ -6,15 +6,20 @@
 // A fixed 6-row sample across two categories, so every KPI/chart total the
 // test asserts on is hand-computable rather than "did it run" - same
 // reasoning loadSqlTestReference (06-fixtures-bigquery-targets.js) uses a
-// custom extractor instead of a live external source.
+// custom extractor instead of a live external source. A custom source
+// must return a 2D array (header row + data rows), like every other
+// source in this library - see notsobiglib's move.md: "every source
+// produces a 2d array... a 'dataframe' for this library" - not an array
+// of objects.
 function myCustomExtractPublishOrders() {
   return [
-    { order_id: '1', category: 'Beverages', revenue: 10 },
-    { order_id: '2', category: 'Beverages', revenue: 20 },
-    { order_id: '3', category: 'Snacks', revenue: 5 },
-    { order_id: '4', category: 'Snacks', revenue: 15 },
-    { order_id: '5', category: 'Snacks', revenue: 25 },
-    { order_id: '6', category: 'Beverages', revenue: 30 }
+    ['order_id', 'category', 'revenue'],
+    ['1', 'Beverages', '10'],
+    ['2', 'Beverages', '20'],
+    ['3', 'Snacks', '5'],
+    ['4', 'Snacks', '15'],
+    ['5', 'Snacks', '25'],
+    ['6', 'Beverages', '30']
   ];
 }
 
