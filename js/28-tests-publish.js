@@ -1,7 +1,7 @@
 // 28-tests-publish.js — Layer 2 verification for the publish kind: BigQuery Tabledata.list
-// read, JS-side KPI/chart aggregation, and the generated HTML actually containing the right
-// numbers - not just "did it run without throwing". See notsobiglib's docs/publish.md for the
-// kind's full config reference, and js/08-fixtures-publish-targets.js for the fixtures below.
+// read, JS-side KPI/chart/table aggregation, and the generated HTML actually containing the
+// right numbers - not just "did it run without throwing". See notsobiglib's docs/publish.md for
+// the kind's full config reference, and js/08-fixtures-publish-targets.js for the fixtures below.
 
 function testPublishGeneratesReportWithCorrectAggregates() {
   runOne('loadPublishOrders');
@@ -18,6 +18,36 @@ function testPublishGeneratesReportWithCorrectAggregates() {
   check('chart shows the Snacks group and its total', html.indexOf('Snacks') !== -1 && html.indexOf('>45<') !== -1,
     'expected a Snacks group with total 45');
   testLog('Generated report file id: ' + result.driveFileId);
+}
+
+// Table block (notsobiglib PR #83): raw mode shows the source's own
+// columns row-for-row, paginated at pageSize 3 over the fixture's 6 rows -
+// asserting the static first page is capped at exactly pageSize (not "did
+// it render something") is what a Node/Layer-1 test already proves for
+// the library itself; this just confirms the real generated file agrees.
+// Aggregated mode reuses the same category totals the chart assertions
+// above already prove (60 Beverages / 45 Snacks), tabular instead of a
+// bar. Clicking "Next" itself can't be driven from this Apps Script test
+// (no browser here) - see testLog's note below for the one manual check
+// this leaves to a human.
+function testPublishTableBlockRendersRawAndAggregatedTables() {
+  var result = runOne('salesPublish');
+  var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
+
+  var rawSection = html.match(/<section class="table-block" data-table-id="recent_orders">[\s\S]*?<\/section>/);
+  check('recent_orders table section is present', !!rawSection, html);
+  var bodyMatch = rawSection && rawSection[0].match(/<tbody>([\s\S]*?)<\/tbody>/);
+  var rowCount = bodyMatch ? (bodyMatch[1].match(/<tr>/g) || []).length : 0;
+  check('raw table static first page shows exactly pageSize (3) of 6 rows', rowCount === 3, rowCount);
+  check('raw table pager reads "Page 1 of 2"', !!(rawSection && rawSection[0].indexOf('Page 1 of 2') !== -1),
+    rawSection && rawSection[0]);
+
+  check('aggregated table shows Beverages total ($60.00)', html.indexOf('$60.00') !== -1, 'expected "$60.00" in generated HTML');
+  check('aggregated table shows Snacks total ($45.00)', html.indexOf('$45.00') !== -1, 'expected "$45.00" in generated HTML');
+
+  testLog('Table-block report file id: ' + result.driveFileId + ' - open it in a browser and click '
+    + '"Next" on Recent orders to confirm the remaining 3 rows appear (client-side pagination can\'t '
+    + 'be driven from this Apps Script test).');
 }
 
 // upsertByName means re-running publish should find and overwrite the

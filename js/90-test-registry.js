@@ -407,12 +407,14 @@ var TEST_CATEGORIES = {
     testTargetProdModel
   ],
   // The publish kind: reads an already-materialized BigQuery table via
-  // Tabledata.list and renders a self-contained HTML dashboard (KPIs + a
-  // bar chart) to Drive. See notsobiglib's docs/publish.md.
+  // Tabledata.list and renders a self-contained HTML dashboard (KPIs, a
+  // bar chart, and paginated tables) to Drive. See notsobiglib's
+  // docs/publish.md.
   publish: [
     testPublishGeneratesReportWithCorrectAggregates,
     testPublishRerunOverwritesSameFile,
-    testPublishRefToNonBigQueryMoveTargetFails
+    testPublishRefToNonBigQueryMoveTargetFails,
+    testPublishTableBlockRendersRawAndAggregatedTables
   ],
   pipeline: [
     testPipelineChain,
