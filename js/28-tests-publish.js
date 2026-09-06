@@ -58,6 +58,7 @@ function testPublishTableBlockRendersRawAndAggregatedTables() {
 // open-in-Excel/Sheets check that actually proves the guard works is left
 // to a human via testLog below.
 function testPublishCsvExportOffersDownloadAndGuardsFormulaInjection() {
+  runOne('loadCsvInjectionCheck');
   var result = runOne('csvInjectionPublish');
   var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
 
