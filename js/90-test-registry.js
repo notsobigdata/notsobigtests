@@ -6,12 +6,12 @@
 
 function setupScriptProperties() {
   PropertiesService.getScriptProperties().setProperties({
-    // Points at notsobiglib's release/15 branch (the parallel-model-
-    // execution fix under review) rather than main - once release/15
-    // merges and its branch is deleted, this 404s (see notsobiglib's
-    // CLAUDE.md, "Downstream consumers pinned to a release") and needs
-    // updating to main.
-    SRC_REF: 'release/15',
+    // release/15 (the parallel-model-execution fix this PR verifies)
+    // merged into notsobiglib's main and was deleted on 2026-09-06 - a
+    // branch-name ref 404s the moment its release branch merges (see
+    // notsobiglib's CLAUDE.md, "Downstream consumers pinned to a
+    // release"), so this points at main, not the branch, now that it's shipped.
+    SRC_REF: 'main',
     NOTSOBIGDATA_DRIVE_FOLDER_ID: '16ZrtrxrO40w4InGi_bzL8I7WLGODa4Dd',
     // Sheets/Drive fixtures below all hold the same 3-row orders sample
     // (order_id, customer, amount), created inside the notsobigdata Drive
