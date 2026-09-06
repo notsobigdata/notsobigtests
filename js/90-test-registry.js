@@ -11,7 +11,7 @@ function setupScriptProperties() {
     // moment its release branch merges (see notsobiglib's CLAUDE.md,
     // "Downstream consumers pinned to a release"), so this points at main,
     // not the branch, once a release ships.
-    SRC_REF: 'feat/on-schema-change',
+    SRC_REF: 'feat/publish-table-csv-export',
     NOTSOBIGDATA_DRIVE_FOLDER_ID: '16ZrtrxrO40w4InGi_bzL8I7WLGODa4Dd',
     // Sheets/Drive fixtures below all hold the same 3-row orders sample
     // (order_id, customer, amount), created inside the notsobigdata Drive
@@ -132,7 +132,10 @@ function setupScriptProperties() {
     // - own table, not reused, same "don't let one test's data leak into
     // another's assumptions" reasoning every other scratch table above
     // follows.
-    BIGQUERY_PUBLISH_TABLE: 'test_orders_publish'
+    BIGQUERY_PUBLISH_TABLE: 'test_orders_publish',
+    // Scratch table for the CSV-export formula-injection check (same file)
+    // - kept separate from BIGQUERY_PUBLISH_TABLE for the same reason.
+    BIGQUERY_CSV_INJECTION_TABLE: 'test_orders_csv_injection'
   });
   Logger.log('Script properties set. Re-run any test function to pick up the change.');
 }
@@ -414,7 +417,8 @@ var TEST_CATEGORIES = {
     testPublishGeneratesReportWithCorrectAggregates,
     testPublishRerunOverwritesSameFile,
     testPublishRefToNonBigQueryMoveTargetFails,
-    testPublishTableBlockRendersRawAndAggregatedTables
+    testPublishTableBlockRendersRawAndAggregatedTables,
+    testPublishCsvExportOffersDownloadAndGuardsFormulaInjection
   ],
   pipeline: [
     testPipelineChain,

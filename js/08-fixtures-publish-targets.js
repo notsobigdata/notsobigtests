@@ -78,3 +78,50 @@ var salesPublish = {
     }
   ]
 };
+
+// notsobiglib PR (CSV export for tables[]): own scratch table, deliberately
+// kept separate from loadPublishOrders/salesPublish above, same "don't let
+// one test's data leak into another's assumptions" reasoning that fixture's
+// own comment already gives. Each value here starts with a character
+// (=/+/-/@) that Excel/Google Sheets parses as a formula trigger on CSV
+// import - csvField() in src/publish.js is supposed to prefix each with a
+// leading straight-quote so they land as literal text instead. A GAS test
+// can't click a button or open a spreadsheet app, so this only proves the
+// pipeline reaches Drive with the guard's source present (see
+// testPublishCsvExportOffersDownloadAndGuardsFormulaInjection below) - the
+// actual open-in-Excel/Sheets check is left to testLog for a human.
+function myCustomExtractCsvInjectionCheck() {
+  return [
+    ['label', 'value'],
+    ['equals', '=1+1'],
+    ['plus', '+cmd|calc'],
+    ['minus', '-2+3'],
+    ['at', '@SUM(1,2)'],
+    ['normal', 'plain text']
+  ];
+}
+
+var loadCsvInjectionCheck = {
+  kind: 'move',
+  name: 'loadCsvInjectionCheck',
+  source: { type: 'custom', fn: myCustomExtractCsvInjectionCheck },
+  target: { type: 'bigquery', projectId: P.BIGQUERY_PROJECT_ID, dataset: P.BIGQUERY_DATASET, table: P.BIGQUERY_CSV_INJECTION_TABLE, mode: 'overwrite' }
+};
+
+var csvInjectionPublish = {
+  kind: 'publish',
+  name: 'csvInjectionPublish',
+  dependsOn: ['loadCsvInjectionCheck'],
+  source: { type: 'ref', ref: 'loadCsvInjectionCheck' },
+  target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-csv-injection-check.html', upsertByName: true },
+  kpis: [{ label: 'Rows', agg: 'count', format: 'integer' }],
+  tables: [
+    {
+      id: 'injection_rows', title: 'Injection check', mode: 'raw', pageSize: 10,
+      columns: [
+        { field: 'label', label: 'Label' },
+        { field: 'value', label: 'Value' }
+      ]
+    }
+  ]
+};
