@@ -70,16 +70,18 @@ function testPublishChartTypesRenderMountPointsAndPayload() {
 
   check('line chart mount point is present', html.indexOf('<div class="chart-canvas" id="chart-by_order">') !== -1, html);
   check('pie chart mount point is present', html.indexOf('<div class="chart-canvas" id="chart-share">') !== -1, html);
-  check('bar chart mount point is present', html.indexOf('<div class="chart-canvas" id="chart-by_category_stub">') !== -1, html);
+  check('stacked bar chart mount point is present', html.indexOf('<div class="chart-canvas" id="chart-by_category_stacked">') !== -1, html);
   check('pinned D3 CDN script tag is present', html.indexOf('cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js') !== -1, html);
 
   var payload = extractPublishPayload(html);
   var pieChart = payload.charts.filter(function (c) { return c.id === 'share'; })[0];
   check('pie chart payload has donut: true', pieChart.donut === true, JSON.stringify(pieChart));
+  var stackedChart = payload.charts.filter(function (c) { return c.id === 'by_category_stacked'; })[0];
+  check('stacked bar chart payload has seriesKeys', stackedChart.seriesKeys && stackedChart.seriesKeys.length > 0, 'expected seriesKeys array, got: ' + JSON.stringify(stackedChart));
 
   testLog('Chart-types report file id: ' + result.driveFileId + ' - open it in a browser and confirm '
     + 'all three charts actually render: a line chart (by order), a donut chart (by category), and a '
-    + 'plain bar chart (by category) - client-side D3 drawing can\'t be verified from this Apps Script test.');
+    + 'stacked bar chart (by category) - client-side D3 drawing can\'t be verified from this Apps Script test.');
 }
 
 // upsertByName means re-running publish should find and overwrite the

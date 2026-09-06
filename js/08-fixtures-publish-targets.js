@@ -93,6 +93,6 @@ var chartTypesPublish = {
   charts: [
     { id: 'by_order', type: 'line', title: 'Revenue by order', groupBy: 'order_id', metric: { agg: 'sum', field: 'revenue' } },
     { id: 'share', type: 'pie', title: 'Share by category', donut: true, groupBy: 'category', metric: { agg: 'sum', field: 'revenue' } },
-    { id: 'by_category_stub', type: 'bar', title: 'By category (single-series)', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' } }
+    { id: 'by_category_stacked', type: 'bar', title: 'By category (stacked)', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' }, series: 'order_id', stacking: 'stacked' }
   ]
 };
