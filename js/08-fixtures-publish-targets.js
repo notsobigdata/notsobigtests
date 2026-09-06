@@ -1,7 +1,8 @@
 // 08-fixtures-publish-targets.js — Declared move()+publish() nodes proving the publish kind
 // end-to-end: a move node lands a small, known dataset in BigQuery, and a publish node reads
-// it back (via source.ref) to render KPIs and a bar chart. Backs the 'publish' test category.
-// See notsobiglib's docs/publish.md for the kind's config reference.
+// it back (via source.ref) to render KPIs, a bar chart, and paginated tables (raw + aggregated).
+// Backs the 'publish' test category. See notsobiglib's docs/publish.md for the kind's config
+// reference.
 
 // A fixed 6-row sample across two categories, so every KPI/chart total the
 // test asserts on is hand-computable rather than "did it run" - same
@@ -55,5 +56,25 @@ var salesPublish = {
   ],
   charts: [
     { id: 'by_category', type: 'bar', title: 'By category', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' } }
+  ],
+  // Table block (notsobiglib PR #83). raw: the source's own columns,
+  // row-for-row, pageSize 3 over these same 6 rows so the static first
+  // page is provably paginated (2 pages), not just "did it render
+  // something". aggregated: same category totals the chart above already
+  // proves (60 Beverages / 45 Snacks), tabular instead of a bar.
+  tables: [
+    {
+      id: 'recent_orders', title: 'Recent orders', mode: 'raw', pageSize: 3,
+      columns: [
+        { field: 'order_id', label: 'Order' },
+        { field: 'category', label: 'Category' },
+        { field: 'revenue', label: 'Revenue', format: 'currency' }
+      ]
+    },
+    {
+      id: 'by_category_table', title: 'Revenue by category', mode: 'aggregated',
+      groupBy: 'category',
+      metrics: [{ label: 'Revenue', agg: 'sum', field: 'revenue', format: 'currency' }]
+    }
   ]
 };
