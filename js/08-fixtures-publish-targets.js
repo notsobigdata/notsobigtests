@@ -78,3 +78,21 @@ var salesPublish = {
     }
   ]
 };
+
+// D3 chart engine (notsobiglib feat/publish-d3-charts): one chart of
+// each new type against the same 6-row sample loadPublishOrders already
+// seeds - reuses that data rather than a fresh scratch table, since this
+// isn't testing a different dataset, just different chart types over the
+// one already-proven-correct dataset.
+var chartTypesPublish = {
+  kind: 'publish',
+  name: 'chartTypesPublish',
+  dependsOn: ['loadPublishOrders'],
+  source: { type: 'ref', ref: 'loadPublishOrders' },
+  target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-chart-types.html', upsertByName: true },
+  charts: [
+    { id: 'by_order', type: 'line', title: 'Revenue by order', groupBy: 'order_id', metric: { agg: 'sum', field: 'revenue' } },
+    { id: 'share', type: 'pie', title: 'Share by category', donut: true, groupBy: 'category', metric: { agg: 'sum', field: 'revenue' } },
+    { id: 'by_category_stub', type: 'bar', title: 'By category (single-series)', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' } }
+  ]
+};
