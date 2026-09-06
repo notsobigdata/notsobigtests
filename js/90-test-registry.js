@@ -6,12 +6,12 @@
 
 function setupScriptProperties() {
   PropertiesService.getScriptProperties().setProperties({
-    // release/14 (source() macro, folders, the notsobiglib rename) merged
-    // into main and was deleted on 2026-09-01 - a branch-name ref 404s the
-    // moment its release branch merges (see notsobiglib's CLAUDE.md,
-    // "Downstream consumers pinned to a release"), so this points at main,
-    // not the branch, once a release ships.
-    SRC_REF: 'feat/on-schema-change',
+    // Points at notsobiglib's release/15 branch (the parallel-model-
+    // execution fix under review) rather than main - once release/15
+    // merges and its branch is deleted, this 404s (see notsobiglib's
+    // CLAUDE.md, "Downstream consumers pinned to a release") and needs
+    // updating to main.
+    SRC_REF: 'release/15',
     NOTSOBIGDATA_DRIVE_FOLDER_ID: '16ZrtrxrO40w4InGi_bzL8I7WLGODa4Dd',
     // Sheets/Drive fixtures below all hold the same 3-row orders sample
     // (order_id, customer, amount), created inside the notsobigdata Drive
@@ -408,7 +408,9 @@ var TEST_CATEGORIES = {
   // Three independent models, each running ~5s on BigQuery. With parallelism,
   // should complete in ~5-7s (all queries parallel). Without, ~15s (sequential).
   parallelism: [
-    testParallelismThreeModelsExecuteInParallel
+    testParallelismThreeModelsExecuteInParallel,
+    testParallelismMixedMaterializationTypesSucceedTogether,
+    testParallelismOneFailureDoesNotAbortItsLevel
   ]
 };
 
