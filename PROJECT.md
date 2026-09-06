@@ -48,10 +48,11 @@ js/
   05-fixtures-drive-targets.js       move() nodes targeting Drive
   06-fixtures-bigquery-targets.js    move() nodes targeting BigQuery
   07-fixtures-api-custom-targets.js  move() nodes targeting api/custom
+  08-fixtures-publish-targets.js     move()+publish() nodes proving the publish kind
   10-tests-cli.js          ) one file per TEST_CATEGORIES key - the file's
   11-tests-extract.js      ) number matches its position in this list, its
   12-tests-load.js         ) name matches runAllTests('<category>'). See
-  13-tests-bigquery.js     ) "Test files" below for the full 10-25 list.
+  13-tests-bigquery.js     ) "Test files" below for the full 10-28 list.
   ...
   90-test-registry.js      setupScriptProperties(), TEST_CATEGORIES, runAllTests()
   99-quick-run.js          test() - the one-click smoke test (runs 'cli')
@@ -84,23 +85,40 @@ runs, from every file, order-independent) - which is why `10-*.js` through
 order and must be preserved; `10`+ numbering is purely for
 findability/mapping to `TEST_CATEGORIES` and can be renumbered freely.
 
-## Test files (`js/10-*.js` – `25-*.js`)
+## Test files (`js/10-*.js` – `28-*.js`)
 
 Each file holds exactly the tests in one `TEST_CATEGORIES` key from
 `90-test-registry.js`, in that key's declared order - so
-`runAllTests('bigquery')` and `js/13-tests-bigquery.js` name the same set:
+`runAllTests('bigquery')` and `js/13-tests-bigquery.js` name the same set.
+The numeric prefix is for findability only (see "Why files, not folders,
+matter to Apps Script" above) - it's not guaranteed unique, and two pairs
+below share a number (`20`, `27`) from features added on separate
+branches without a full renumbering pass each time:
 
-| file | category | file | category |
-|---|---|---|---|
-| 10-tests-cli.js | cli | 18-tests-model-discovery.js | model-discovery |
-| 11-tests-extract.js | extract | 19-tests-model-tests.js | model-tests |
-| 12-tests-load.js | load | 20-tests-model-compile.js | model-compile |
-| 13-tests-bigquery.js | bigquery | 21-tests-manifest.js | manifest |
-| 14-tests-model-core.js | model-core | 22-tests-datatests.js | datatests |
-| 15-tests-model-dependson.js | model-dependson | 23-tests-emptyguards.js | emptyguards |
-| 16-tests-model-jinja.js | model-jinja | 24-tests-regressions.js | regressions |
-| 17-tests-model-files.js | model-files | 25-tests-pipeline.js | pipeline |
-| | | 26-tests-model-sources.js | model-sources |
+| file | category |
+|---|---|
+| 10-tests-cli.js | cli |
+| 11-tests-extract.js | extract |
+| 12-tests-load.js | load |
+| 13-tests-bigquery.js | bigquery |
+| 14-tests-model-core.js | model-core |
+| 14b-tests-model-incremental.js | model-incremental |
+| 15-tests-model-dependson.js | model-dependson |
+| 16-tests-model-jinja.js | model-jinja |
+| 17-tests-model-files.js | model-files |
+| 18-tests-model-discovery.js | model-discovery |
+| 19-tests-model-tests.js | model-tests |
+| 20-tests-model-compile.js | model-compile |
+| 20-tests-targets.js | targets |
+| 21-tests-manifest.js | manifest |
+| 22-tests-datatests.js | datatests |
+| 23-tests-emptyguards.js | emptyguards |
+| 24-tests-regressions.js | regressions |
+| 25-tests-pipeline.js | pipeline |
+| 26-tests-model-sources.js | model-sources |
+| 27-tests-model-on-schema-change.js | model-on-schema-change |
+| 27-tests-parallelism.js | parallelism |
+| 28-tests-publish.js | publish |
 
 A few non-`test*` helper functions live inside their category's file even
 though they're not themselves tests, because nothing else uses them:

@@ -126,7 +126,13 @@ function setupScriptProperties() {
     // loading anything into it first - see those tests' own comments.
     BIGQUERY_SOURCE_FRESH_TABLE: 'test_source_fresh',
     BIGQUERY_SOURCE_STALE_TABLE: 'test_source_stale',
-    BIGQUERY_SOURCE_VIOLATIONS_TABLE: 'test_source_violations'
+    BIGQUERY_SOURCE_VIOLATIONS_TABLE: 'test_source_violations',
+
+    // Scratch table for the publish kind (js/08-fixtures-publish-targets.js)
+    // - own table, not reused, same "don't let one test's data leak into
+    // another's assumptions" reasoning every other scratch table above
+    // follows.
+    BIGQUERY_PUBLISH_TABLE: 'test_orders_publish'
   });
   Logger.log('Script properties set. Re-run any test function to pick up the change.');
 }
@@ -399,6 +405,14 @@ var TEST_CATEGORIES = {
     testUnknownTargetThrows,
     testTargetDevModel,
     testTargetProdModel
+  ],
+  // The publish kind: reads an already-materialized BigQuery table via
+  // Tabledata.list and renders a self-contained HTML dashboard (KPIs + a
+  // bar chart) to Drive. See notsobiglib's docs/publish.md.
+  publish: [
+    testPublishGeneratesReportWithCorrectAggregates,
+    testPublishRerunOverwritesSameFile,
+    testPublishRefToNonBigQueryMoveTargetFails
   ],
   pipeline: [
     testPipelineChain,
