@@ -1,4 +1,4 @@
-// 27-tests-publish.js — Layer 2 verification for the publish kind: BigQuery Tabledata.list
+// 28-tests-publish.js — Layer 2 verification for the publish kind: BigQuery Tabledata.list
 // read, JS-side KPI/chart aggregation, and the generated HTML actually containing the right
 // numbers - not just "did it run without throwing". See notsobiglib's docs/publish.md for the
 // kind's full config reference, and js/08-fixtures-publish-targets.js for the fixtures below.

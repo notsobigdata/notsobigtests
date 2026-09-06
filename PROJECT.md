@@ -102,7 +102,7 @@ Each file holds exactly the tests in one `TEST_CATEGORIES` key from
 | 16-tests-model-jinja.js | model-jinja | 24-tests-regressions.js | regressions |
 | 17-tests-model-files.js | model-files | 25-tests-pipeline.js | pipeline |
 | | | 26-tests-model-sources.js | model-sources |
-| | | 27-tests-publish.js | publish |
+| | | 28-tests-publish.js | publish |
 
 A few non-`test*` helper functions live inside their category's file even
 though they're not themselves tests, because nothing else uses them:
