@@ -3,6 +3,14 @@
 // right numbers - not just "did it run without throwing". See notsobiglib's docs/publish.md for
 // the kind's full config reference, and js/08-fixtures-publish-targets.js for the fixtures below.
 
+function extractPublishPayload(html) {
+  var match = html.match(/window\.__PUBLISH_PAYLOAD__ = (.+?);/);
+  if (!match) {
+    throw new Error('expected an embedded __PUBLISH_PAYLOAD__ in the generated HTML');
+  }
+  return JSON.parse(match[1]);
+}
+
 function testPublishGeneratesReportWithCorrectAggregates() {
   runOne('loadPublishOrders');
   var result = runOne('salesPublish');
@@ -13,10 +21,11 @@ function testPublishGeneratesReportWithCorrectAggregates() {
   // 10+20+30 = 60 Beverages, 5+15+25 = 45 Snacks, total = 105.
   check('KPI total revenue is correct', html.indexOf('$105.00') !== -1, 'expected "$105.00" in generated HTML');
   check('KPI order count is correct', html.indexOf('>6<') !== -1, 'expected the order count 6 to render');
-  check('chart shows the Beverages group and its total', html.indexOf('Beverages') !== -1 && html.indexOf('>60<') !== -1,
-    'expected a Beverages group with total 60');
-  check('chart shows the Snacks group and its total', html.indexOf('Snacks') !== -1 && html.indexOf('>45<') !== -1,
-    'expected a Snacks group with total 45');
+  var chartPayload = extractPublishPayload(html).charts.filter(function (c) { return c.id === 'by_category'; })[0];
+  var chartTotals = {};
+  chartPayload.data.forEach(function (d) { chartTotals[d.groupValue] = d.total; });
+  check('chart shows the Beverages group and its total', chartTotals.Beverages === 60, 'expected Beverages total 60, got: ' + JSON.stringify(chartPayload.data));
+  check('chart shows the Snacks group and its total', chartTotals.Snacks === 45, 'expected Snacks total 45, got: ' + JSON.stringify(chartPayload.data));
   testLog('Generated report file id: ' + result.driveFileId);
 }
 
@@ -48,6 +57,31 @@ function testPublishTableBlockRendersRawAndAggregatedTables() {
   testLog('Table-block report file id: ' + result.driveFileId + ' - open it in a browser and click '
     + '"Next" on Recent orders to confirm the remaining 3 rows appear (client-side pagination can\'t '
     + 'be driven from this Apps Script test).');
+}
+
+// D3 chart engine (notsobiglib feat/publish-d3-charts): a GAS test can't
+// execute D3 or open a browser, so this only proves the pipeline reaches
+// Drive with the right containers/payload for each new type - same
+// ceiling notsobiglib's own Layer 1 tests already accept. The actual
+// visual check is left to a human via testLog below.
+function testPublishChartTypesRenderMountPointsAndPayload() {
+  var result = runOne('chartTypesPublish');
+  var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
+
+  check('line chart mount point is present', html.indexOf('<div class="chart-canvas" id="chart-by_order">') !== -1, html);
+  check('pie chart mount point is present', html.indexOf('<div class="chart-canvas" id="chart-share">') !== -1, html);
+  check('stacked bar chart mount point is present', html.indexOf('<div class="chart-canvas" id="chart-by_category_stacked">') !== -1, html);
+  check('pinned D3 CDN script tag is present', html.indexOf('cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js') !== -1, html);
+
+  var payload = extractPublishPayload(html);
+  var pieChart = payload.charts.filter(function (c) { return c.id === 'share'; })[0];
+  check('pie chart payload has donut: true', pieChart.donut === true, JSON.stringify(pieChart));
+  var stackedChart = payload.charts.filter(function (c) { return c.id === 'by_category_stacked'; })[0];
+  check('stacked bar chart payload has seriesKeys', stackedChart.seriesKeys && stackedChart.seriesKeys.length > 0, 'expected seriesKeys array, got: ' + JSON.stringify(stackedChart));
+
+  testLog('Chart-types report file id: ' + result.driveFileId + ' - open it in a browser and confirm '
+    + 'all three charts actually render: a line chart (by order), a donut chart (by category), and a '
+    + 'stacked bar chart (by category) - client-side D3 drawing can\'t be verified from this Apps Script test.');
 }
 
 // upsertByName means re-running publish should find and overwrite the
