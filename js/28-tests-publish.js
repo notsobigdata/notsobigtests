@@ -84,6 +84,34 @@ function testPublishChartTypesRenderMountPointsAndPayload() {
     + 'stacked bar chart (by category) - client-side D3 drawing can\'t be verified from this Apps Script test.');
 }
 
+// Cross-chart click-to-highlight (notsobiglib feat/publish-chart-interactivity):
+// a GAS test can't click anything or read computed opacity, so this only
+// proves the pipeline reaches Drive with linkKey/seriesLinkKey correctly
+// present/absent in the payload - same ceiling notsobiglib's own Layer 1
+// tests already accept. The actual click/highlight behavior is left to a
+// human via testLog below.
+function testPublishChartInteractivityLinksPropagateToPayload() {
+  var result = runOne('chartInteractivityPublish');
+  var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
+  var payload = extractPublishPayload(html);
+
+  var byCategory = payload.charts.filter(function (c) { return c.id === 'by_category'; })[0];
+  check('by_category has linkKey "category"', byCategory.linkKey === 'category', JSON.stringify(byCategory));
+
+  var byCategoryOrder = payload.charts.filter(function (c) { return c.id === 'by_category_order'; })[0];
+  check('by_category_order has both linkKey and seriesLinkKey', byCategoryOrder.linkKey === 'category' && byCategoryOrder.seriesLinkKey === 'order_id', JSON.stringify(byCategoryOrder));
+
+  var byOrder = payload.charts.filter(function (c) { return c.id === 'by_order'; })[0];
+  check('by_order (unlinked) has no linkKey', byOrder.linkKey === undefined, JSON.stringify(byOrder));
+
+  testLog('Chart-interactivity report file id: ' + result.driveFileId + ' - open it in a browser and: '
+    + '(1) click a bar/slice on "By category" or "Share by category" and confirm the other category-linked '
+    + 'charts dim to the matching category while "Revenue by order" (unlinked) is unaffected; '
+    + '(2) click a segment on "By category and order" and confirm only the exact (category, order) pair '
+    + 'lights up elsewhere, not the whole category; '
+    + '(3) click the same element again and confirm everything returns to full opacity.');
+}
+
 // upsertByName means re-running publish should find and overwrite the
 // same file, not create a second one - the whole reason the fixture
 // declares it (see 08-fixtures-publish-targets.js's own comment).
