@@ -190,6 +190,34 @@ function testPublishLinkToResolvesRelativeFilenameToDestination() {
     + 'Drive\'s preview doesn\'t execute the report\'s inline script.');
 }
 
+// Block source override (notsobiglib feat/publish-block-source-override):
+// proves a single kpi/table reading its own source.ref actually pulls
+// from that other table (loadPublishRefunds), not the report's default
+// source (loadPublishOrders) - both nodes are run explicitly here rather
+// than relying on an earlier test in the category having already loaded
+// them, so this test also passes standalone
+// (runAllTests('testPublishBlockSourceOverrideReadsFromItsOwnRef')).
+function testPublishBlockSourceOverrideReadsFromItsOwnRef() {
+  runOne('loadPublishOrders');
+  runOne('loadPublishRefunds');
+  var result = runOne('blockSourceOverridePublish');
+  var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
+  var payload = extractPublishPayload(html);
+
+  var totalRevenue = payload.kpis.filter(function (k) { return k.label === 'Total revenue'; })[0];
+  var totalRefunds = payload.kpis.filter(function (k) { return k.label === 'Total refunds'; })[0];
+  check('default-source kpi sums loadPublishOrders\' revenue (10+20+5+15+25+30=105)',
+    totalRevenue.value === 105, JSON.stringify(totalRevenue));
+  check('overridden kpi sums loadPublishRefunds\' amount (10+5+30=45), not the default source',
+    totalRefunds.value === 45, JSON.stringify(totalRefunds));
+
+  var table = payload.tables.filter(function (t) { return t.id === 'refunds_detail'; })[0];
+  check('overridden table holds all 3 loadPublishRefunds rows', table.rows.length === 3, JSON.stringify(table.rows));
+  var reasons = table.rows.map(function (row) { return row[3]; }).sort();
+  check('overridden table\'s rows are loadPublishRefunds\' own (has a "reason" column absent from the default source)',
+    JSON.stringify(reasons) === JSON.stringify(['damaged', 'damaged', 'wrong item']), JSON.stringify(table.rows));
+}
+
 // upsertByName means re-running publish should find and overwrite the
 // same file, not create a second one - the whole reason the fixture
 // declares it (see 08-fixtures-publish-targets.js's own comment).

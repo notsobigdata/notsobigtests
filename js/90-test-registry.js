@@ -136,7 +136,11 @@ function setupScriptProperties() {
     BIGQUERY_PUBLISH_TABLE: 'test_orders_publish',
     // Scratch table for the CSV-export formula-injection check (same file)
     // - kept separate from BIGQUERY_PUBLISH_TABLE for the same reason.
-    BIGQUERY_CSV_INJECTION_TABLE: 'test_orders_csv_injection'
+    BIGQUERY_CSV_INJECTION_TABLE: 'test_orders_csv_injection',
+    // Second, distinct table for the block-source-override test (same
+    // file) - a block override only proves anything if it actually reads
+    // different rows than BIGQUERY_PUBLISH_TABLE.
+    BIGQUERY_PUBLISH_REFUNDS_TABLE: 'test_orders_publish_refunds'
   });
   Logger.log('Script properties set. Re-run any test function to pick up the change.');
 }
@@ -423,7 +427,8 @@ var TEST_CATEGORIES = {
     testPublishChartTypesRenderMountPointsAndPayload,
     testPublishChartInteractivityLinksPropagateToPayload,
     testPublishFiltersRenderAndPayloadReflectReactsToOptIn,
-    testPublishLinkToResolvesRelativeFilenameToDestination
+    testPublishLinkToResolvesRelativeFilenameToDestination,
+    testPublishBlockSourceOverrideReadsFromItsOwnRef
   ],
   pipeline: [
     testPipelineChain,

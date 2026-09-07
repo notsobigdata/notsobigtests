@@ -219,3 +219,57 @@ var linkToPublish = {
       linkTo: { node: 'filtersPublish', field: 'category', newTab: true } }
   ]
 };
+
+// A second, unrelated 3-row sample in its own scratch table
+// (BIGQUERY_PUBLISH_REFUNDS_TABLE) - separate rows and separate column
+// values (a 'reason' column loadPublishOrders doesn't have) from
+// loadPublishOrders' 6-row sample, so blockSourceOverridePublish's
+// override can only pass if it's genuinely reading this table, not
+// silently falling back to the default source.
+function myCustomExtractPublishRefunds() {
+  return [
+    ['order_id', 'category', 'amount', 'reason'],
+    ['1', 'Beverages', '10', 'damaged'],
+    ['3', 'Snacks', '5', 'wrong item'],
+    ['6', 'Beverages', '30', 'damaged']
+  ];
+}
+
+var loadPublishRefunds = {
+  kind: 'move',
+  name: 'loadPublishRefunds',
+  source: { type: 'custom', fn: myCustomExtractPublishRefunds },
+  target: { type: 'bigquery', projectId: P.BIGQUERY_PROJECT_ID, dataset: P.BIGQUERY_DATASET, table: P.BIGQUERY_PUBLISH_REFUNDS_TABLE, mode: 'overwrite' }
+};
+
+// Block source override (notsobiglib feat/publish-block-source-override):
+// the report's default source is loadPublishOrders (6 rows, no 'amount'/
+// 'reason' columns), but the "Total refunds" kpi and "refunds_detail"
+// table both declare their own source.ref pointing at loadPublishRefunds
+// instead - proving a single block can read a completely different table
+// (different columns included) than the rest of the report. See
+// 28-tests-publish.js's testPublishBlockSourceOverrideReadsFromItsOwnRef.
+var blockSourceOverridePublish = {
+  kind: 'publish',
+  name: 'blockSourceOverridePublish',
+  dependsOn: ['loadPublishOrders', 'loadPublishRefunds'],
+  source: { type: 'ref', ref: 'loadPublishOrders' },
+  target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-block-source-override.html', upsertByName: true },
+  kpis: [
+    { label: 'Total revenue', agg: 'sum', field: 'revenue', format: 'currency' },
+    { label: 'Total refunds', agg: 'sum', field: 'amount', format: 'currency',
+      source: { type: 'ref', ref: 'loadPublishRefunds' } }
+  ],
+  tables: [
+    {
+      id: 'refunds_detail', title: 'Refunds detail', mode: 'raw',
+      columns: [
+        { field: 'order_id', label: 'Order' },
+        { field: 'category', label: 'Category' },
+        { field: 'amount', label: 'Amount', format: 'currency' },
+        { field: 'reason', label: 'Reason' }
+      ],
+      source: { type: 'ref', ref: 'loadPublishRefunds' }
+    }
+  ]
+};
