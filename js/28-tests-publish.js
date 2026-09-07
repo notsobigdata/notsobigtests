@@ -135,6 +135,31 @@ function testPublishChartInteractivityLinksPropagateToPayload() {
     + '(3) click the same element again and confirm everything returns to full opacity.');
 }
 
+// filters[] (notsobiglib feat/publish-filters): a GAS test can't change a
+// dropdown or read a recomputed DOM value, so this only proves the
+// pipeline reaches Drive with the filters bar, the raw rows, and the
+// opt-in/opt-out filterableConfig split all correctly present - same
+// ceiling notsobiglib's own Layer 1 tests already accept. The actual
+// filter-change/recompute behavior is left to a human via testLog below.
+function testPublishFiltersRenderAndPayloadReflectReactsToOptIn() {
+  var result = runOne('filtersPublish');
+  var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
+
+  check('filters bar is present with a category select', html.indexOf('data-filter-field="category"') !== -1, html);
+  check('category options include Beverages and Snacks', html.indexOf('<option value="Beverages">Beverages</option>') !== -1 && html.indexOf('<option value="Snacks">Snacks</option>') !== -1, html);
+
+  var payload = extractPublishPayload(html);
+  check('payload.rows carries all 6 raw rows for client-side filtering', payload.rows && payload.rows.length === 6, JSON.stringify(payload.rows));
+  check('filterableConfig includes the reactsTo kpi/chart/table, and excludes the opted-out Orders kpi',
+    payload.filterableConfig.kpis.length === 1 && payload.filterableConfig.charts.length === 1 && payload.filterableConfig.tables.length === 1,
+    JSON.stringify(payload.filterableConfig));
+
+  testLog('Filters report file id: ' + result.driveFileId + ' - open it in a browser and: '
+    + '(1) set the Category filter to "Beverages" and confirm "Total revenue" updates to $60.00, the "By category" bar chart shows only Beverages, and "Recent orders" shows only Beverages rows, while "Orders" (no reactsTo) stays at 6; '
+    + '(2) set it to "Snacks" and confirm the equivalent $45.00/Snacks-only behavior; '
+    + '(3) set it back to "All" and confirm every block returns to its original page-load value.');
+}
+
 // upsertByName means re-running publish should find and overwrite the
 // same file, not create a second one - the whole reason the fixture
 // declares it (see 08-fixtures-publish-targets.js's own comment).

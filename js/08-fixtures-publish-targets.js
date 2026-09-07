@@ -163,3 +163,37 @@ var chartInteractivityPublish = {
     { id: 'by_order', type: 'line', title: 'Revenue by order', groupBy: 'order_id', metric: { agg: 'sum', field: 'revenue' } }
   ]
 };
+
+// filters[] (notsobiglib feat/publish-filters): one filter (category) on
+// loadPublishOrders' already-proven 6-row sample (Beverages 60 total,
+// Snacks 45 total - see loadPublishOrders' own comment). "Total revenue"
+// and the bar chart and the raw table all opt in via reactsTo; "Orders"
+// (a plain count) deliberately doesn't, so a human can visually confirm
+// the opt-in boundary: it must stay at 6 no matter what the Category
+// filter is set to, while everything else narrows to just that category.
+var filtersPublish = {
+  kind: 'publish',
+  name: 'filtersPublish',
+  dependsOn: ['loadPublishOrders'],
+  source: { type: 'ref', ref: 'loadPublishOrders' },
+  target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-filters.html', upsertByName: true },
+  filters: [{ field: 'category', label: 'Category' }],
+  kpis: [
+    { label: 'Total revenue', agg: 'sum', field: 'revenue', format: 'currency', reactsTo: ['category'] },
+    { label: 'Orders', agg: 'count', format: 'integer' }
+  ],
+  charts: [
+    { id: 'by_category', type: 'bar', title: 'By category', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' }, reactsTo: ['category'] }
+  ],
+  tables: [
+    {
+      id: 'recent_orders', title: 'Recent orders', mode: 'raw', pageSize: 3,
+      columns: [
+        { field: 'order_id', label: 'Order' },
+        { field: 'category', label: 'Category' },
+        { field: 'revenue', label: 'Revenue', format: 'currency' }
+      ],
+      reactsTo: ['category']
+    }
+  ]
+};
