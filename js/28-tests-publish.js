@@ -162,66 +162,32 @@ function testPublishFiltersRenderAndPayloadReflectReactsToOptIn() {
 
 // linkTo (notsobiglib feat/publish-link-to): a GAS test can't click a bar
 // or follow a navigation, so this only proves the pipeline resolved the
-// real Drive URL of its destination (filtersPublish) and embedded it
-// correctly in the payload - same ceiling every other interactive-chart
-// test above already accepts. The actual click-through and destination
-// pre-filtering is left to a human via testLog below. filtersPublish is
-// run first every time, not relying on runAllTests('publish')'s own
-// ordering, since linkTo's destination must have been published at least
-// once before this can resolve (see notsobiglib's docs/publish.md).
-function testPublishLinkToResolvesRealDriveUrlToDestination() {
-  var filtersResult = runOne('filtersPublish');
+// destination's own filename and embedded it correctly in the payload -
+// same ceiling every other interactive-chart test above already accepts.
+// linkTo resolves to a plain relative link (the destination's own
+// target.fileName), not a Drive URL, and has no "destination must have
+// been published first" requirement - so unlike an earlier version of
+// this test, filtersPublish doesn't need to run before linkToPublish for
+// this to resolve. The actual click-through and destination pre-filtering
+// is left to a human via testLog below.
+function testPublishLinkToResolvesRelativeFilenameToDestination() {
   var result = runOne('linkToPublish');
   var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
 
   var payload = extractPublishPayload(html);
   var chart = payload.charts.filter(function (c) { return c.id === 'by_category'; })[0];
-  var expectedUrl = 'https://drive.google.com/file/d/' + filtersResult.driveFileId + '/view';
-  check('linkTo resolves to filtersPublish\'s real Drive URL', !!chart.linkTo && chart.linkTo.url === expectedUrl,
-    'expected ' + expectedUrl + ', got: ' + JSON.stringify(chart.linkTo));
+  check('linkTo resolves to filtersPublish\'s own target.fileName', !!chart.linkTo && chart.linkTo.url === 'publish-filters.html',
+    'expected "publish-filters.html", got: ' + JSON.stringify(chart.linkTo));
   check('linkTo carries the configured field', !!chart.linkTo && chart.linkTo.field === 'category', JSON.stringify(chart.linkTo));
   check('linkTo newTab is true', !!chart.linkTo && chart.linkTo.newTab === true, JSON.stringify(chart.linkTo));
 
-  testLog('LinkTo report file id: ' + result.driveFileId + ' (links to filtersPublish file id ' + filtersResult.driveFileId + ') - open it in '
-    + 'a browser and: (1) click a bar on "By category" and confirm it opens the filtersPublish report in a new tab; '
-    + '(2) confirm that report\'s Category filter is already set to the clicked category, with "Total revenue" and '
-    + '"Recent orders" already narrowed to it, exactly as if you\'d picked it from the dropdown yourself; '
-    + '(3) reload the linkTo report with no query string and confirm a plain click still works the same way.');
-}
-
-// linkTo's first-run guard (notsobiglib feat/publish-link-to): a target
-// that has never been published gives a clear error instead of embedding
-// a broken link. Declared as temporary nodes (see withTemporaryNodes' own
-// comment above) since a permanently-broken publish node would make
-// testRunEverything() fail - neverPublishedLinkToTarget is deliberately
-// never run by this test, proving the "hasn't been published yet" branch
-// rather than the happy path testPublishLinkToResolvesRealDriveUrlToDestination
-// above already covers.
-function testPublishLinkToToNeverPublishedTargetFailsClearly() {
-  withTemporaryNodes({
-    neverPublishedLinkToTarget: {
-      kind: 'publish',
-      name: 'neverPublishedLinkToTarget',
-      dependsOn: ['loadPublishOrders'],
-      source: { type: 'ref', ref: 'loadPublishOrders' },
-      target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-link-to-never-published-target.html', upsertByName: true },
-      filters: [{ field: 'category', label: 'Category' }],
-      kpis: [{ label: 'Revenue', agg: 'sum', field: 'revenue', format: 'currency' }]
-    },
-    linkToNeverPublishedTarget: {
-      kind: 'publish',
-      name: 'linkToNeverPublishedTarget',
-      dependsOn: ['loadPublishOrders'],
-      source: { type: 'ref', ref: 'loadPublishOrders' },
-      target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-should-not-be-created.html' },
-      charts: [{ id: 'by_category', type: 'bar', title: 'By category', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' },
-        linkTo: { node: 'neverPublishedLinkToTarget', field: 'category' } }]
-    }
-  }, function () {
-    var error = runOneExpectingFailure('linkToNeverPublishedTarget');
-    check('linkTo to a never-published target fails with a clear error',
-      error.indexOf('hasn\'t been published yet') !== -1, error);
-  });
+  testLog('LinkTo report file id: ' + result.driveFileId + ' - download (or Drive-for-Desktop-sync) both this file and the '
+    + 'filtersPublish report ("publish-filters.html") into the SAME local folder, then open the linkTo report in a browser '
+    + '(a file:// URL, or via a local server) and: (1) click a bar on "By category" and confirm it opens the filtersPublish '
+    + 'report in a new tab; (2) confirm that report\'s Category filter is already set to the clicked category, with "Total '
+    + 'revenue" and "Recent orders" already narrowed to it, exactly as if you\'d picked it from the dropdown yourself. '
+    + 'Opening either file straight from Drive\'s own web preview (rather than a downloaded/synced local copy) will not work - '
+    + 'Drive\'s preview doesn\'t execute the report\'s inline script.');
 }
 
 // upsertByName means re-running publish should find and overwrite the

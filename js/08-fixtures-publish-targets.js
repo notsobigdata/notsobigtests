@@ -200,15 +200,14 @@ var filtersPublish = {
 
 // linkTo (notsobiglib feat/publish-link-to): links to filtersPublish above
 // rather than declaring a fresh destination - filtersPublish already
-// satisfies both of linkTo's requirements on a destination (upsertByName:
-// true, and a filters[] entry on the same field this chart sends), so
-// reusing it is one less scratch file to manage, not a shortcut. Reuses
-// loadPublishOrders' already-proven 6-row sample, same as every other
-// publish fixture on this page. filtersPublish must be published at least
-// once before this one - see 28-tests-publish.js's
-// testPublishLinkToResolvesRealDriveUrlToDestination, which runs them in
-// that order every time so this fixture never depends on incidental test
-// ordering elsewhere in the suite.
+// satisfies linkTo's one requirement on a destination (a filters[] entry
+// on the same field this chart sends), so reusing it is one less scratch
+// file to manage, not a shortcut. Reuses loadPublishOrders' already-proven
+// 6-row sample, same as every other publish fixture on this page. linkTo
+// resolves to filtersPublish's own target.fileName as a plain relative
+// link (not a Drive URL), so there's no ordering requirement between the
+// two - see 28-tests-publish.js's
+// testPublishLinkToResolvesRelativeFilenameToDestination.
 var linkToPublish = {
   kind: 'publish',
   name: 'linkToPublish',
