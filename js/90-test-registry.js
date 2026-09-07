@@ -422,7 +422,9 @@ var TEST_CATEGORIES = {
     testPublishCsvExportOffersDownloadAndGuardsFormulaInjection,
     testPublishChartTypesRenderMountPointsAndPayload,
     testPublishChartInteractivityLinksPropagateToPayload,
-    testPublishFiltersRenderAndPayloadReflectReactsToOptIn
+    testPublishFiltersRenderAndPayloadReflectReactsToOptIn,
+    testPublishLinkToResolvesRealDriveUrlToDestination,
+    testPublishLinkToToNeverPublishedTargetFailsClearly
   ],
   pipeline: [
     testPipelineChain,

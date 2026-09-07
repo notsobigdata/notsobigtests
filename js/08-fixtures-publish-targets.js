@@ -197,3 +197,26 @@ var filtersPublish = {
     }
   ]
 };
+
+// linkTo (notsobiglib feat/publish-link-to): links to filtersPublish above
+// rather than declaring a fresh destination - filtersPublish already
+// satisfies both of linkTo's requirements on a destination (upsertByName:
+// true, and a filters[] entry on the same field this chart sends), so
+// reusing it is one less scratch file to manage, not a shortcut. Reuses
+// loadPublishOrders' already-proven 6-row sample, same as every other
+// publish fixture on this page. filtersPublish must be published at least
+// once before this one - see 28-tests-publish.js's
+// testPublishLinkToResolvesRealDriveUrlToDestination, which runs them in
+// that order every time so this fixture never depends on incidental test
+// ordering elsewhere in the suite.
+var linkToPublish = {
+  kind: 'publish',
+  name: 'linkToPublish',
+  dependsOn: ['loadPublishOrders'],
+  source: { type: 'ref', ref: 'loadPublishOrders' },
+  target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-link-to.html', upsertByName: true },
+  charts: [
+    { id: 'by_category', type: 'bar', title: 'By category', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' },
+      linkTo: { node: 'filtersPublish', field: 'category', newTab: true } }
+  ]
+};
