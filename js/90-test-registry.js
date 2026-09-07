@@ -6,11 +6,12 @@
 
 function setupScriptProperties() {
   PropertiesService.getScriptProperties().setProperties({
-    // release/15 (the parallel-model-execution fix this PR verifies)
-    // merged into notsobiglib's main and was deleted on 2026-09-06 - a
-    // branch-name ref 404s the moment its release branch merges (see
-    // notsobiglib's CLAUDE.md, "Downstream consumers pinned to a
-    // release"), so this points at main, not the branch, now that it's shipped.
+    // release/15 (the parallel-model-execution fix this PR verifies) and
+    // release/16 (publish's filters[] feature) have both merged into
+    // notsobiglib's main and their branches were deleted - a branch-name
+    // ref 404s the moment its release branch merges (see notsobiglib's
+    // CLAUDE.md, "Downstream consumers pinned to a release"), so this
+    // points at main, not a branch, now that both have shipped.
     SRC_REF: 'main',
     NOTSOBIGDATA_DRIVE_FOLDER_ID: '16ZrtrxrO40w4InGi_bzL8I7WLGODa4Dd',
     // Sheets/Drive fixtures below all hold the same 3-row orders sample
@@ -126,7 +127,16 @@ function setupScriptProperties() {
     // loading anything into it first - see those tests' own comments.
     BIGQUERY_SOURCE_FRESH_TABLE: 'test_source_fresh',
     BIGQUERY_SOURCE_STALE_TABLE: 'test_source_stale',
-    BIGQUERY_SOURCE_VIOLATIONS_TABLE: 'test_source_violations'
+    BIGQUERY_SOURCE_VIOLATIONS_TABLE: 'test_source_violations',
+
+    // Scratch table for the publish kind (js/08-fixtures-publish-targets.js)
+    // - own table, not reused, same "don't let one test's data leak into
+    // another's assumptions" reasoning every other scratch table above
+    // follows.
+    BIGQUERY_PUBLISH_TABLE: 'test_orders_publish',
+    // Scratch table for the CSV-export formula-injection check (same file)
+    // - kept separate from BIGQUERY_PUBLISH_TABLE for the same reason.
+    BIGQUERY_CSV_INJECTION_TABLE: 'test_orders_csv_injection'
   });
   Logger.log('Script properties set. Re-run any test function to pick up the change.');
 }
@@ -387,7 +397,7 @@ var TEST_CATEGORIES = {
   // when incremental table schema changes between runs
   'model-on-schema-change': [
     testOnSchemaChangeIgnoreSkipsNewColumns,
-    testOnSchemaChangeFailBlocksSchemaChange,
+    testOnSchemaChangeFailAcceptsIncrementalRun,
     testOnSchemaChangeAppendNewColumnsAddsColumns,
     testOnSchemaChangeSyncAllColumnsFullyResync,
     testOnSchemaChangeIgnoredDuringFullRefresh
@@ -399,6 +409,20 @@ var TEST_CATEGORIES = {
     testUnknownTargetThrows,
     testTargetDevModel,
     testTargetProdModel
+  ],
+  // The publish kind: reads an already-materialized BigQuery table via
+  // Tabledata.list and renders a self-contained HTML dashboard (KPIs, a
+  // bar chart, and paginated tables) to Drive. See notsobiglib's
+  // docs/publish.md.
+  publish: [
+    testPublishGeneratesReportWithCorrectAggregates,
+    testPublishRerunOverwritesSameFile,
+    testPublishRefToNonBigQueryMoveTargetFails,
+    testPublishTableBlockRendersRawAndAggregatedTables,
+    testPublishCsvExportOffersDownloadAndGuardsFormulaInjection,
+    testPublishChartTypesRenderMountPointsAndPayload,
+    testPublishChartInteractivityLinksPropagateToPayload,
+    testPublishFiltersRenderAndPayloadReflectReactsToOptIn
   ],
   pipeline: [
     testPipelineChain,
