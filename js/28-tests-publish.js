@@ -218,6 +218,30 @@ function testPublishBlockSourceOverrideReadsFromItsOwnRef() {
     JSON.stringify(reasons) === JSON.stringify(['damaged', 'damaged', 'wrong item']), JSON.stringify(table.rows));
 }
 
+// Detail drill-down (notsobiglib feat/publish-detail-drilldown): automated
+// part checks the written report's payload carries the right .detail data
+// (groupBy/rows, trimmed to just detail.columns+groupBy+series per the
+// branch's own security fix) for both the chart and the table. Human part
+// (do by hand after this passes): open the written Drive file in a
+// browser, expand the "Beverages" row's "▸" toggle and click the
+// "Beverages" bar in the chart - both should open a modal listing exactly
+// order_id 1, 2, 6 with revenues 10/20/30.
+function testPublishDetailDrilldownPayloadCarriesGroupRows() {
+  runOne('loadPublishOrders');
+  var result = runOne('detailDrilldownPublish');
+  var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
+  var payload = extractPublishPayload(html);
+
+  var chart = payload.charts.filter(function (c) { return c.id === 'by_category'; })[0];
+  check('chart.detail.groupBy is "category"', chart.detail.groupBy === 'category', JSON.stringify(chart.detail));
+  var beverageRows = chart.detail.rows.filter(function (r) { return r.category === 'Beverages'; });
+  check('chart.detail.rows holds exactly the 3 Beverages rows', beverageRows.length === 3, JSON.stringify(beverageRows));
+
+  var table = payload.tables.filter(function (t) { return t.id === 'by_category_table'; })[0];
+  check('table.detail.groupBy is "category"', table.detail.groupBy === 'category', JSON.stringify(table.detail));
+  check('table.detail.rows holds all 6 loadPublishOrders rows (ungrouped)', table.detail.rows.length === 6, JSON.stringify(table.detail.rows));
+}
+
 // upsertByName means re-running publish should find and overwrite the
 // same file, not create a second one - the whole reason the fixture
 // declares it (see 08-fixtures-publish-targets.js's own comment).

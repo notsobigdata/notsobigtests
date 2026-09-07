@@ -428,7 +428,8 @@ var TEST_CATEGORIES = {
     testPublishChartInteractivityLinksPropagateToPayload,
     testPublishFiltersRenderAndPayloadReflectReactsToOptIn,
     testPublishLinkToResolvesRelativeFilenameToDestination,
-    testPublishBlockSourceOverrideReadsFromItsOwnRef
+    testPublishBlockSourceOverrideReadsFromItsOwnRef,
+    testPublishDetailDrilldownPayloadCarriesGroupRows
   ],
   pipeline: [
     testPipelineChain,
