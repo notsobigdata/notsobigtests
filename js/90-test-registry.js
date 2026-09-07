@@ -418,7 +418,9 @@ var TEST_CATEGORIES = {
     testPublishRerunOverwritesSameFile,
     testPublishRefToNonBigQueryMoveTargetFails,
     testPublishTableBlockRendersRawAndAggregatedTables,
-    testPublishCsvExportOffersDownloadAndGuardsFormulaInjection
+    testPublishCsvExportOffersDownloadAndGuardsFormulaInjection,
+    testPublishChartTypesRenderMountPointsAndPayload,
+    testPublishChartInteractivityLinksPropagateToPayload
   ],
   pipeline: [
     testPipelineChain,

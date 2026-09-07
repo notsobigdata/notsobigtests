@@ -125,3 +125,41 @@ var csvInjectionPublish = {
     }
   ]
 };
+
+// D3 chart engine (notsobiglib feat/publish-d3-charts): one chart of
+// each new type against the same 6-row sample loadPublishOrders already
+// seeds - reuses that data rather than a fresh scratch table, since this
+// isn't testing a different dataset, just different chart types over the
+// one already-proven-correct dataset.
+var chartTypesPublish = {
+  kind: 'publish',
+  name: 'chartTypesPublish',
+  dependsOn: ['loadPublishOrders'],
+  source: { type: 'ref', ref: 'loadPublishOrders' },
+  target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-chart-types.html', upsertByName: true },
+  charts: [
+    { id: 'by_order', type: 'line', title: 'Revenue by order', groupBy: 'order_id', metric: { agg: 'sum', field: 'revenue' } },
+    { id: 'share', type: 'pie', title: 'Share by category', donut: true, groupBy: 'category', metric: { agg: 'sum', field: 'revenue' } },
+    { id: 'by_category_stacked', type: 'bar', title: 'By category (stacked)', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' }, series: 'order_id', stacking: 'stacked' }
+  ]
+};
+
+// Cross-chart interactivity (notsobiglib feat/publish-chart-interactivity):
+// three charts linked on 'category' (plain bar, pie, and a stacked bar
+// also linking its series on 'order_id'), one ('by_order', a plain line
+// chart) left deliberately unlinked - the same shape as the design spec's
+// worked example, reusing loadPublishOrders' already-proven 6-row sample
+// rather than a fresh scratch table.
+var chartInteractivityPublish = {
+  kind: 'publish',
+  name: 'chartInteractivityPublish',
+  dependsOn: ['loadPublishOrders'],
+  source: { type: 'ref', ref: 'loadPublishOrders' },
+  target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-chart-interactivity.html', upsertByName: true },
+  charts: [
+    { id: 'by_category', type: 'bar', title: 'By category', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' }, linkKey: 'category' },
+    { id: 'share', type: 'pie', title: 'Share by category', donut: true, groupBy: 'category', metric: { agg: 'sum', field: 'revenue' }, linkKey: 'category' },
+    { id: 'by_category_order', type: 'bar', title: 'By category and order', groupBy: 'category', series: 'order_id', stacking: 'stacked', metric: { agg: 'sum', field: 'revenue' }, linkKey: 'category', seriesLinkKey: 'order_id' },
+    { id: 'by_order', type: 'line', title: 'Revenue by order', groupBy: 'order_id', metric: { agg: 'sum', field: 'revenue' } }
+  ]
+};
