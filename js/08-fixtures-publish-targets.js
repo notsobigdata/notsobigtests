@@ -273,3 +273,25 @@ var blockSourceOverridePublish = {
     }
   ]
 };
+
+// Detail drill-down (notsobiglib feat/publish-detail-drilldown): both the
+// aggregated table and the chart drill into loadPublishOrders' own rows
+// by category - clicking/expanding "Beverages" should surface exactly
+// its 3 underlying rows (order_id 1, 2, 6), summing to 60. See
+// 28-tests-publish.js's testPublishDetailDrilldownPayloadCarriesGroupRows.
+var detailDrilldownPublish = {
+  kind: 'publish',
+  name: 'detailDrilldownPublish',
+  dependsOn: ['loadPublishOrders'],
+  source: { type: 'ref', ref: 'loadPublishOrders' },
+  target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-detail-drilldown.html', upsertByName: true },
+  charts: [
+    { id: 'by_category', type: 'bar', title: 'Revenue by category', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' },
+      detail: { columns: [{ field: 'order_id', label: 'Order' }, { field: 'revenue', label: 'Revenue', format: 'currency' }] } }
+  ],
+  tables: [
+    { id: 'by_category_table', title: 'Revenue by category', mode: 'aggregated', groupBy: 'category',
+      metrics: [{ label: 'Revenue', agg: 'sum', field: 'revenue', format: 'currency' }],
+      detail: { columns: [{ field: 'order_id', label: 'Order' }, { field: 'revenue', label: 'Revenue', format: 'currency' }] } }
+  ]
+};
