@@ -422,7 +422,8 @@ var TEST_CATEGORIES = {
     testPublishCsvExportOffersDownloadAndGuardsFormulaInjection,
     testPublishChartTypesRenderMountPointsAndPayload,
     testPublishChartInteractivityLinksPropagateToPayload,
-    testPublishFiltersRenderAndPayloadReflectReactsToOptIn
+    testPublishFiltersRenderAndPayloadReflectReactsToOptIn,
+    testPublishLinkToResolvesRelativeFilenameToDestination
   ],
   pipeline: [
     testPipelineChain,

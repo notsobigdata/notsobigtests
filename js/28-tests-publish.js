@@ -160,6 +160,36 @@ function testPublishFiltersRenderAndPayloadReflectReactsToOptIn() {
     + '(3) set it back to "All" and confirm every block returns to its original page-load value.');
 }
 
+// linkTo (notsobiglib feat/publish-link-to): a GAS test can't click a bar
+// or follow a navigation, so this only proves the pipeline resolved the
+// destination's own filename and embedded it correctly in the payload -
+// same ceiling every other interactive-chart test above already accepts.
+// linkTo resolves to a plain relative link (the destination's own
+// target.fileName), not a Drive URL, and has no "destination must have
+// been published first" requirement - so unlike an earlier version of
+// this test, filtersPublish doesn't need to run before linkToPublish for
+// this to resolve. The actual click-through and destination pre-filtering
+// is left to a human via testLog below.
+function testPublishLinkToResolvesRelativeFilenameToDestination() {
+  var result = runOne('linkToPublish');
+  var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
+
+  var payload = extractPublishPayload(html);
+  var chart = payload.charts.filter(function (c) { return c.id === 'by_category'; })[0];
+  check('linkTo resolves to filtersPublish\'s own target.fileName', !!chart.linkTo && chart.linkTo.url === 'publish-filters.html',
+    'expected "publish-filters.html", got: ' + JSON.stringify(chart.linkTo));
+  check('linkTo carries the configured field', !!chart.linkTo && chart.linkTo.field === 'category', JSON.stringify(chart.linkTo));
+  check('linkTo newTab is true', !!chart.linkTo && chart.linkTo.newTab === true, JSON.stringify(chart.linkTo));
+
+  testLog('LinkTo report file id: ' + result.driveFileId + ' - download (or Drive-for-Desktop-sync) both this file and the '
+    + 'filtersPublish report ("publish-filters.html") into the SAME local folder, then open the linkTo report in a browser '
+    + '(a file:// URL, or via a local server) and: (1) click a bar on "By category" and confirm it opens the filtersPublish '
+    + 'report in a new tab; (2) confirm that report\'s Category filter is already set to the clicked category, with "Total '
+    + 'revenue" and "Recent orders" already narrowed to it, exactly as if you\'d picked it from the dropdown yourself. '
+    + 'Opening either file straight from Drive\'s own web preview (rather than a downloaded/synced local copy) will not work - '
+    + 'Drive\'s preview doesn\'t execute the report\'s inline script.');
+}
+
 // upsertByName means re-running publish should find and overwrite the
 // same file, not create a second one - the whole reason the fixture
 // declares it (see 08-fixtures-publish-targets.js's own comment).
