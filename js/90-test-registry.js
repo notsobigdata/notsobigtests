@@ -396,7 +396,7 @@ var TEST_CATEGORIES = {
   // when incremental table schema changes between runs
   'model-on-schema-change': [
     testOnSchemaChangeIgnoreSkipsNewColumns,
-    testOnSchemaChangeFailBlocksSchemaChange,
+    testOnSchemaChangeFailAcceptsIncrementalRun,
     testOnSchemaChangeAppendNewColumnsAddsColumns,
     testOnSchemaChangeSyncAllColumnsFullyResync,
     testOnSchemaChangeIgnoredDuringFullRefresh

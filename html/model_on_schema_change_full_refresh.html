@@ -1,0 +1,10 @@
+<!-- Incremental model to test that on_schema_change is ignored during full refresh -->
+<script type="text/sql" id="on_schema_change_full_refresh">
+  {{ config(materialized='incremental', incrementalStrategy='merge', uniqueKey='id', on_schema_change='ignore') }}
+  select
+    cast(1 as int64) as id,
+    'alice' as name
+    {% if is_incremental() %}
+      , 'new_value' as new_column
+    {% endif %}
+</script>
