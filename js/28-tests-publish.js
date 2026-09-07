@@ -59,6 +59,29 @@ function testPublishTableBlockRendersRawAndAggregatedTables() {
     + 'be driven from this Apps Script test).');
 }
 
+// CSV export (notsobiglib PR feat/publish-table-csv-export): the button
+// and its wiring reach the real generated file, including the
+// formula-injection guard - same regex-on-generated-HTML ceiling the
+// Node/Layer-1 test already accepts (see notsobiglib's src/publish.md),
+// since a GAS test can't click a button or open a spreadsheet app. The
+// open-in-Excel/Sheets check that actually proves the guard works is left
+// to a human via testLog below.
+function testPublishCsvExportOffersDownloadAndGuardsFormulaInjection() {
+  runOne('loadCsvInjectionCheck');
+  var result = runOne('csvInjectionPublish');
+  var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
+
+  check('Export CSV button is present', html.indexOf('class="table-csv-export"') !== -1, html);
+  check('CSV export wiring (Blob/text/csv) is present', html.indexOf('Blob') !== -1 && html.indexOf('text/csv') !== -1, html);
+  check('csvField guards a leading =/+/-/@ formula-trigger character', /\/\^\[=\+@-\]\//.test(html), html);
+
+  testLog('CSV-injection-check report file id: ' + result.driveFileId + ' - open it in a browser, click '
+    + '"Export CSV" on "Injection check", then open the downloaded CSV in Excel or Google Sheets and '
+    + 'confirm the =1+1 / +cmd|calc / -2+3 / @SUM(1,2) cells render as literal text - each preceded by '
+    + 'a leading apostrophe or otherwise unevaluated - never as a computed result, a launched app, or a '
+    + 'security warning dialog.');
+}
+
 // D3 chart engine (notsobiglib feat/publish-d3-charts): a GAS test can't
 // execute D3 or open a browser, so this only proves the pipeline reaches
 // Drive with the right containers/payload for each new type - same
