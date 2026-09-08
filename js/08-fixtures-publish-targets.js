@@ -295,3 +295,23 @@ var detailDrilldownPublish = {
       detail: { columns: [{ field: 'order_id', label: 'Order' }, { field: 'revenue', label: 'Revenue', format: 'currency' }] } }
   ]
 };
+
+// Board layout (notsobiglib feat/publish-board-layout): "overview" is
+// the tree's root, "order_detail" is its child via relatesTo - proves
+// the tree renders, pans/zooms, and the child's own raw-row table still
+// works normally positioned inside a board node.
+var boardLayoutPublish = {
+  kind: 'publish',
+  name: 'boardLayoutPublish',
+  dependsOn: ['loadPublishOrders'],
+  source: { type: 'ref', ref: 'loadPublishOrders' },
+  target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-board-layout.html', upsertByName: true },
+  layout: { type: 'board' },
+  charts: [
+    { id: 'overview', type: 'bar', title: 'Revenue by category', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' } }
+  ],
+  tables: [
+    { id: 'order_detail', title: 'Order detail', mode: 'raw', relatesTo: 'overview',
+      columns: [{ field: 'order_id', label: 'Order' }, { field: 'category', label: 'Category' }, { field: 'revenue', label: 'Revenue', format: 'currency' }] }
+  ]
+};

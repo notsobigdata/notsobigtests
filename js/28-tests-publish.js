@@ -242,6 +242,23 @@ function testPublishDetailDrilldownPayloadCarriesGroupRows() {
   check('table.detail.rows holds all 6 loadPublishOrders rows (ungrouped)', table.detail.rows.length === 6, JSON.stringify(table.detail.rows));
 }
 
+// Automated part: the written report's markup carries board-mode
+// structure (a positioned node per block, one edge). Human part (do by
+// hand after this passes): open the written Drive file in a browser,
+// confirm "overview" and "order_detail" render as two connected boxes,
+// drag to pan the canvas, and scroll to zoom in/out.
+function testPublishBoardLayoutRendersPositionedTreeWithOneEdge() {
+  runOne('loadPublishOrders');
+  var result = runOne('boardLayoutPublish');
+  var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
+
+  check('board-viewport markup present', html.indexOf('board-viewport') !== -1, html);
+  var nodeCount = (html.match(/class="board-node"/g) || []).length;
+  check('exactly 2 board nodes rendered', nodeCount === 2, 'got ' + nodeCount);
+  var edgeCount = (html.match(/class="board-edge"/g) || []).length;
+  check('exactly 1 edge rendered (overview -> order_detail)', edgeCount === 1, 'got ' + edgeCount);
+}
+
 // upsertByName means re-running publish should find and overwrite the
 // same file, not create a second one - the whole reason the fixture
 // declares it (see 08-fixtures-publish-targets.js's own comment).

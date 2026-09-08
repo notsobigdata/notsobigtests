@@ -429,7 +429,8 @@ var TEST_CATEGORIES = {
     testPublishFiltersRenderAndPayloadReflectReactsToOptIn,
     testPublishLinkToResolvesRelativeFilenameToDestination,
     testPublishBlockSourceOverrideReadsFromItsOwnRef,
-    testPublishDetailDrilldownPayloadCarriesGroupRows
+    testPublishDetailDrilldownPayloadCarriesGroupRows,
+    testPublishBoardLayoutRendersPositionedTreeWithOneEdge
   ],
   pipeline: [
     testPipelineChain,
