@@ -246,12 +246,16 @@ function testPublishDetailDrilldownPayloadCarriesGroupRows() {
 // structure (a positioned node per block, one edge). Human part (do by
 // hand after this passes): open the written Drive file in a browser,
 // confirm "overview" and "order_detail" render as two connected boxes,
-// drag to pan the canvas, and scroll to zoom in/out. This fixture only
-// has 2 boxes so it can't show off the contour-based spacing rewrite
-// (notsobiglib feat/publish-design-system) - if a board fixture with a
-// genuinely lopsided tree (a deep branch next to a wide shallow one)
-// ever gets added here, eyeball that the narrow branch no longer eats
-// as much horizontal space as the wide one's full leaf count.
+// drag to pan the canvas, scroll to zoom in/out, and drag the little
+// resize grip in a node's bottom-right corner to confirm it grows/
+// shrinks (native CSS resize, notsobiglib feat/publish-design-system -
+// resizing may overlap the other node, that's expected, positions don't
+// reflow). This fixture only has 2 boxes so it can't show off the
+// contour-based spacing rewrite (also feat/publish-design-system) - if a
+// board fixture with a genuinely lopsided tree (a deep branch next to a
+// wide shallow one) ever gets added here, eyeball that the narrow
+// branch no longer eats as much horizontal space as the wide one's full
+// leaf count.
 function testPublishBoardLayoutRendersPositionedTreeWithOneEdge() {
   runOne('loadPublishOrders');
   var result = runOne('boardLayoutPublish');
