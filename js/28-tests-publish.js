@@ -246,7 +246,12 @@ function testPublishDetailDrilldownPayloadCarriesGroupRows() {
 // structure (a positioned node per block, one edge). Human part (do by
 // hand after this passes): open the written Drive file in a browser,
 // confirm "overview" and "order_detail" render as two connected boxes,
-// drag to pan the canvas, and scroll to zoom in/out.
+// drag to pan the canvas, and scroll to zoom in/out. This fixture only
+// has 2 boxes so it can't show off the contour-based spacing rewrite
+// (notsobiglib feat/publish-design-system) - if a board fixture with a
+// genuinely lopsided tree (a deep branch next to a wide shallow one)
+// ever gets added here, eyeball that the narrow branch no longer eats
+// as much horizontal space as the wide one's full leaf count.
 function testPublishBoardLayoutRendersPositionedTreeWithOneEdge() {
   runOne('loadPublishOrders');
   var result = runOne('boardLayoutPublish');
@@ -257,6 +262,34 @@ function testPublishBoardLayoutRendersPositionedTreeWithOneEdge() {
   check('exactly 2 board nodes rendered', nodeCount === 2, 'got ' + nodeCount);
   var edgeCount = (html.match(/class="board-edge"/g) || []).length;
   check('exactly 1 edge rendered (overview -> order_detail)', edgeCount === 1, 'got ' + edgeCount);
+}
+
+// Design-system verification (notsobiglib feat/publish-design-system):
+// every report now ships a built-in light/dark toggle and a second,
+// dark token set - mechanical checks mirror notsobiglib's own Layer 1
+// coverage (same file, different runtime). The real cross-theme/
+// cross-block visual check (KPIs, chart, table, and - on a board
+// fixture - board nodes all re-theme together, with no flash of
+// unstyled content) can't be driven from this Apps Script test, so it's
+// left to a human via testLog below, same ceiling every other
+// browser-only check in this file already accepts.
+function testPublishThemeToggleRendersWithDarkTokens() {
+  var result = runOne('salesPublish');
+  var html = DriveApp.getFileById(result.driveFileId).getBlob().getDataAsString();
+
+  check('theme toggle button present', html.indexOf('id="theme-toggle"') !== -1, html);
+  check('sun/moon icon classes present',
+    html.indexOf('theme-toggle-icon-sun') !== -1 && html.indexOf('theme-toggle-icon-moon') !== -1, html);
+  check('dark-mode media block present', /prefers-color-scheme:\s*dark/.test(html), html);
+  check('manual dark override selector present', html.indexOf('data-theme="dark"') !== -1, html);
+  check('theme choice persisted via localStorage', html.indexOf('localStorage.setItem("publish-theme"') !== -1, html);
+
+  testLog('Theme-toggle report file id: ' + result.driveFileId + ' - open it in a browser and: '
+    + '(1) confirm it opens light or dark matching your OS color-scheme setting with no toggle click; '
+    + '(2) click the top-right toggle and confirm KPIs, the chart, and the table all re-theme together '
+    + 'with no flash of unstyled content; (3) reload the tab and confirm your last explicit choice '
+    + 'persisted; (4) with no stored choice (clear localStorage for this file\'s origin), flip your '
+    + 'OS dark-mode setting and confirm the report follows it automatically.');
 }
 
 // upsertByName means re-running publish should find and overwrite the
