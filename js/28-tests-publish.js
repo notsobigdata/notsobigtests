@@ -242,20 +242,27 @@ function testPublishDetailDrilldownPayloadCarriesGroupRows() {
   check('table.detail.rows holds all 6 loadPublishOrders rows (ungrouped)', table.detail.rows.length === 6, JSON.stringify(table.detail.rows));
 }
 
-// Automated part: the written report's markup carries board-mode
-// structure (a positioned node per block, one edge). Human part (do by
-// hand after this passes): open the written Drive file in a browser,
-// confirm "overview" and "order_detail" render as two connected boxes,
-// drag to pan the canvas, scroll to zoom in/out, and drag the little
-// resize grip in a node's bottom-right corner to confirm it grows/
-// shrinks (native CSS resize, notsobiglib feat/publish-design-system -
+// Automated part: the written report's markup/payload carries board-mode
+// structure (an unpositioned node per block, the relatesTo edge encoded
+// in the payload, an empty edges layer to be filled client-side).
+// Position computation and edge drawing moved client-side in notsobiglib
+// feat/publish-board-d3-layout (d3-hierarchy's d3.stratify()/d3.tree() +
+// d3-zoom) - GAS can't execute that browser JS, so neither a positioned
+// "board-node" nor a rendered "board-edge" path exists in the raw HTML
+// this test reads; both only appear after a real browser runs the page's
+// script. Human part (do by hand after this passes): open the written
+// Drive file in a browser, confirm "overview" and "order_detail" render
+// as two connected boxes (this is where the one edge actually becomes
+// visible), drag to pan the canvas, scroll to zoom in/out (and pinch-zoom
+// on a touch device, and double-click to zoom in - both new, free
+// upgrades from d3-zoom), and drag the little resize grip in a node's
+// bottom-right corner to confirm it grows/shrinks (native CSS resize -
 // resizing may overlap the other node, that's expected, positions don't
-// reflow). This fixture only has 2 boxes so it can't show off the
-// contour-based spacing rewrite (also feat/publish-design-system) - if a
-// board fixture with a genuinely lopsided tree (a deep branch next to a
-// wide shallow one) ever gets added here, eyeball that the narrow
-// branch no longer eats as much horizontal space as the wide one's full
-// leaf count.
+// reflow). This fixture only has 2 boxes so it can't show off d3-tree's
+// spacing on a genuinely lopsided tree - if a board fixture with a deep
+// branch next to a wide shallow one ever gets added here, eyeball that
+// the narrow branch doesn't get pushed out by the wide one's full leaf
+// count.
 function testPublishBoardLayoutRendersPositionedTreeWithOneEdge() {
   runOne('loadPublishOrders');
   var result = runOne('boardLayoutPublish');
@@ -263,9 +270,14 @@ function testPublishBoardLayoutRendersPositionedTreeWithOneEdge() {
 
   check('board-viewport markup present', html.indexOf('board-viewport') !== -1, html);
   var nodeCount = (html.match(/class="board-node"/g) || []).length;
-  check('exactly 2 board nodes rendered', nodeCount === 2, 'got ' + nodeCount);
-  var edgeCount = (html.match(/class="board-edge"/g) || []).length;
-  check('exactly 1 edge rendered (overview -> order_detail)', edgeCount === 1, 'got ' + edgeCount);
+  check('exactly 2 unpositioned board nodes rendered', nodeCount === 2, 'got ' + nodeCount);
+  check('board-edges layer present, empty until the client script fills it', html.indexOf('<svg class="board-edges" id="board-edges"></svg>') !== -1, html);
+
+  var payload = extractPublishPayload(html);
+  var overview = payload.charts.filter(function (c) { return c.id === 'overview'; })[0];
+  var orderDetail = payload.tables.filter(function (t) { return t.id === 'order_detail'; })[0];
+  check('overview has no relatesTo (board root)', overview.relatesTo === null, JSON.stringify(overview));
+  check('order_detail.relatesTo is "overview" (the one edge, drawn client-side)', orderDetail.relatesTo === 'overview', JSON.stringify(orderDetail));
 }
 
 // Design-system verification (notsobiglib feat/publish-design-system):
