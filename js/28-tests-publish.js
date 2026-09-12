@@ -244,25 +244,46 @@ function testPublishDetailDrilldownPayloadCarriesGroupRows() {
 
 // Automated part: the written report's markup/payload carries board-mode
 // structure (an unpositioned node per block, the relatesTo edge encoded
-// in the payload, an empty edges layer to be filled client-side).
-// Position computation and edge drawing moved client-side in notsobiglib
-// feat/publish-board-d3-layout (d3-hierarchy's d3.stratify()/d3.tree() +
-// d3-zoom) - GAS can't execute that browser JS, so neither a positioned
-// "board-node" nor a rendered "board-edge" path exists in the raw HTML
-// this test reads; both only appear after a real browser runs the page's
-// script. Human part (do by hand after this passes): open the written
-// Drive file in a browser, confirm "overview" and "order_detail" render
-// as two connected boxes (this is where the one edge actually becomes
-// visible), drag to pan the canvas, scroll to zoom in/out (and pinch-zoom
-// on a touch device, and double-click to zoom in - both new, free
-// upgrades from d3-zoom), and drag the little resize grip in a node's
-// bottom-right corner to confirm it grows/shrinks (native CSS resize -
-// resizing may overlap the other node, that's expected, positions don't
-// reflow). This fixture only has 2 boxes so it can't show off d3-tree's
-// spacing on a genuinely lopsided tree - if a board fixture with a deep
-// branch next to a wide shallow one ever gets added here, eyeball that
-// the narrow branch doesn't get pushed out by the wide one's full leaf
-// count.
+// in the payload, an empty edges layer to be filled client-side, and now
+// the filters[]/reactsTo this fixture declares). Position computation,
+// drag/direction/reset, hover-highlight, metric-card rendering and edge
+// drawing are all client-side (notsobiglib feat/publish-board-d3-layout,
+// extended by feat/pipeline-canvas-redesign) - GAS can't execute that
+// browser JS, so none of it exists in the raw HTML this test reads; it
+// only appears after a real browser runs the page's script.
+//
+// Human part (do by hand after this passes, in the actual written Drive
+// file, opened in a browser):
+// - "overview" and "order_detail" render as two connected metric cards
+//   (a headline number + small chart each, NOT the full chart/table
+//   inline) - this is where the one edge actually becomes visible.
+// - Drag a card: it should follow the cursor (not lag/run away - this
+//   was a real bug, fixed), and reloading the page keeps it where you
+//   dropped it.
+// - Click the direction button (bottom-right toolbar) through all 4
+//   orientations - the tree should visibly reflow each time, not just
+//   rotate the existing positions.
+// - Click "reset" - dragged nodes snap back to the computed layout;
+//   direction choice is untouched.
+// - Hover a card - its direct neighbor(s) should highlight, everything
+//   else should dim.
+// - Click a card to expand it into the full chart/table; close it;
+//   confirm it collapses back to the card (not a blank node) and can be
+//   expanded again.
+// - **The specific scenario this fixture's filters[] exists to check:**
+//   change the Category filter dropdown. BOTH cards should update -
+//   including "order_detail"'s card (a `mode: 'raw'` table), which
+//   should show the correct filtered row COUNT, not 0. (This exact path
+//   - a raw table's metric card after a filter change - is where a real
+//   bug lived twice: first the card didn't update at all, then a fix for
+//   that showed a wrong 0 instead of the filtered count. Both are fixed,
+//   but this is the one thing on this fixture most worth not rubber-
+//   stamping.) Expand "order_detail" after filtering and confirm the
+//   full table's row count matches the card's number.
+// This fixture only has 2 boxes so it can't show off d3-tree's spacing
+// on a genuinely lopsided tree - if a board fixture with a deep branch
+// next to a wide shallow one ever gets added here, eyeball that the
+// narrow branch doesn't get pushed out by the wide one's full leaf count.
 function testPublishBoardLayoutRendersPositionedTreeWithOneEdge() {
   runOne('loadPublishOrders');
   var result = runOne('boardLayoutPublish');
@@ -278,6 +299,8 @@ function testPublishBoardLayoutRendersPositionedTreeWithOneEdge() {
   var orderDetail = payload.tables.filter(function (t) { return t.id === 'order_detail'; })[0];
   check('overview has no relatesTo (board root)', overview.relatesTo === null, JSON.stringify(overview));
   check('order_detail.relatesTo is "overview" (the one edge, drawn client-side)', orderDetail.relatesTo === 'overview', JSON.stringify(orderDetail));
+  check('order_detail carries mode: "raw" (needed for its board metric card to sum correctly)', orderDetail.mode === 'raw', JSON.stringify(orderDetail));
+  check('filters payload declares the Category dropdown', payload.filters && payload.filters.length === 1 && payload.filters[0].field === 'category', JSON.stringify(payload.filters));
 }
 
 // Design-system verification (notsobiglib feat/publish-design-system):
