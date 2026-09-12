@@ -1,0 +1,9 @@
+<!-- html/docs_multi_parent_demo.html -->
+<!-- Two {{ ref() }} calls on purpose - see js/29-tests-docs.js's
+     testDocsCommand for why this is the one fixture in this whole
+     project with a real multi-parent dependency. -->
+<script type="text/sql">
+select o.customer, o.order_id, s.order_count
+from {{ ref('stg_orders') }} o
+join {{ ref('orders_summary') }} s on o.customer = s.customer
+</script>

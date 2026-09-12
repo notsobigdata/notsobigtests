@@ -433,6 +433,12 @@ var TEST_CATEGORIES = {
     testPublishBoardLayoutRendersPositionedTreeWithOneEdge,
     testPublishThemeToggleRendersWithDarkTokens
   ],
+  // cli('docs') - a project doc site (DAG + per-node detail) written to
+  // Drive, reusing publish()'s board design. See notsobiglib's
+  // docs/superpowers/specs/2026-09-11-docs-command-design.md.
+  docs: [
+    testDocsCommand
+  ],
   pipeline: [
     testPipelineChain,
     testRunEverything
