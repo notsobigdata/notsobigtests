@@ -52,7 +52,7 @@ js/
   10-tests-cli.js          ) one file per TEST_CATEGORIES key - the file's
   11-tests-extract.js      ) number matches its position in this list, its
   12-tests-load.js         ) name matches runAllTests('<category>'). See
-  13-tests-bigquery.js     ) "Test files" below for the full 10-28 list.
+  13-tests-bigquery.js     ) "Test files" below for the full 10-29 list.
   ...
   90-test-registry.js      setupScriptProperties(), TEST_CATEGORIES, runAllTests()
   99-quick-run.js          test() - the one-click smoke test (runs 'cli')
@@ -119,6 +119,7 @@ branches without a full renumbering pass each time:
 | 27-tests-model-on-schema-change.js | model-on-schema-change |
 | 27-tests-parallelism.js | parallelism |
 | 28-tests-publish.js | publish |
+| 29-tests-docs.js | docs |
 
 A few non-`test*` helper functions live inside their category's file even
 though they're not themselves tests, because nothing else uses them:
