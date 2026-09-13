@@ -296,10 +296,18 @@ var detailDrilldownPublish = {
   ]
 };
 
-// Board layout (notsobiglib feat/publish-board-layout): "overview" is
-// the tree's root, "order_detail" is its child via relatesTo - proves
-// the tree renders, pans/zooms, and the child's own raw-row table still
-// works normally positioned inside a board node.
+// Board layout (notsobiglib feat/publish-board-layout, extended by
+// feat/pipeline-canvas-redesign): "overview" is the tree's root,
+// "order_detail" is its child via relatesTo - proves the tree renders,
+// pans/zooms/drags, and the child's own raw-row table still works
+// normally positioned inside a board node. `filters`/`reactsTo` were
+// added specifically to exercise pipeline-canvas-redesign's board
+// metric cards staying in sync with a filter change on a `mode: 'raw'`
+// table - the exact combination that hid a real bug (the client-side
+// filter recompute never set `.mode` on the table object it handed to
+// the metric-card updater, so a `mode: 'raw'` table's card briefly
+// showed a wrong 0 instead of the row count; fixed, but this fixture is
+// what a human should actually watch to confirm it stays fixed).
 var boardLayoutPublish = {
   kind: 'publish',
   name: 'boardLayoutPublish',
@@ -307,11 +315,12 @@ var boardLayoutPublish = {
   source: { type: 'ref', ref: 'loadPublishOrders' },
   target: { type: 'drive', folderId: P.NOTSOBIGDATA_DRIVE_FOLDER_ID, fileName: 'publish-board-layout.html', upsertByName: true },
   layout: { type: 'board' },
+  filters: [{ field: 'category', label: 'Category' }],
   charts: [
-    { id: 'overview', type: 'bar', title: 'Revenue by category', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' } }
+    { id: 'overview', type: 'bar', title: 'Revenue by category', groupBy: 'category', metric: { agg: 'sum', field: 'revenue' }, reactsTo: ['category'] }
   ],
   tables: [
-    { id: 'order_detail', title: 'Order detail', mode: 'raw', relatesTo: 'overview',
+    { id: 'order_detail', title: 'Order detail', mode: 'raw', relatesTo: 'overview', reactsTo: ['category'],
       columns: [{ field: 'order_id', label: 'Order' }, { field: 'category', label: 'Category' }, { field: 'revenue', label: 'Revenue', format: 'currency' }] }
   ]
 };
